@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Rio Piranhas - Design System
+   Brand colors:
+   - Brand Blue: #00B0EC -> hsl(197 100% 46%)
+   - Brand Yellow: #FFE400 -> hsl(53 100% 50%)
+   All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 40% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 12%;
+
+    /* Brand Blue */
+    --primary: 197 100% 46%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 197 100% 92%;
+    --primary-deep: 205 90% 30%;
+
+    /* Brand Yellow */
+    --accent: 53 100% 50%;
+    --accent-foreground: 205 90% 20%;
+
+    --secondary: 197 30% 96%;
+    --secondary-foreground: 205 90% 25%;
+
+    --muted: 210 30% 96%;
+    --muted-foreground: 210 15% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 210 25% 90%;
+    --input: 210 25% 90%;
+    --ring: 197 100% 46%;
+
+    --radius: 1rem;
+
+    /* Brand gradients & effects */
+    --gradient-hero: linear-gradient(135deg, hsl(197 100% 46% / 0.92), hsl(205 90% 30% / 0.92));
+    --gradient-blue: linear-gradient(135deg, hsl(197 100% 46%), hsl(205 90% 35%));
+    --gradient-yellow: linear-gradient(135deg, hsl(53 100% 50%), hsl(45 100% 55%));
+    --gradient-soft: linear-gradient(180deg, hsl(197 100% 96%), hsl(0 0% 100%));
+
+    --shadow-cta: 0 14px 40px -10px hsl(53 100% 50% / 0.55);
+    --shadow-blue: 0 20px 50px -15px hsl(197 100% 46% / 0.5);
+    --shadow-card: 0 10px 30px -12px hsl(205 50% 30% / 0.18);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+}
+
+@layer components {
+  .wave-divider {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3Cpath d='M0,32 C320,80 720,0 1440,48 L1440,80 L0,80 Z' fill='%2300B0EC'/%3E%3C/svg%3E");
+    background-size: cover;
+    background-position: center;
+  }
+  .wave-divider-white {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1440 80' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'%3E%3Cpath d='M0,32 C320,80 720,0 1440,48 L1440,80 L0,80 Z' fill='white'/%3E%3C/svg%3E");
+    background-size: cover;
+    background-position: center;
+  }
+}
+
+@layer utilities {
+  .container-tight {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  @keyframes flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-flow {
+    background-size: 200% 200%;
+    animation: flow 8s ease-in-out infinite;
+  }
+  @keyframes pulse-soft {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(53 100% 50% / 0.6); }
+    50% { box-shadow: 0 0 0 14px hsl(53 100% 50% / 0); }
+  }
+  .animate-pulse-soft {
+    animation: pulse-soft 2.2s ease-out infinite;
+  }
+  @keyframes float-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-float-up {
+    animation: float-up 0.6s ease-out both;
+  }
+}
