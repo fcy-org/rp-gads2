@@ -41,7 +41,7 @@ export const Products = () => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <div className="rounded-2xl border-2 border-border overflow-hidden bg-card shadow-card">
                   <img
-                    src={`/src/assets/${image}`}
+                    src={`/products/${image}`}
                     alt={`Produto ${index + 1}`}
                     className="w-full h-64 object-cover"
                   />

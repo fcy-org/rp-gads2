@@ -1,23 +1,26 @@
 import { Star, Quote } from "lucide-react";
+import profileJoao from "@/assets/profile-joao.png";
+import profileMaria from "@/assets/profile-maria.png";
+import profileCarlos from "@/assets/profile-carlos.png";
 
 const reviews = [
   {
     name: "João Mendes",
     role: "Mercadinho Bom Preço · São Luís/MA",
     text: "Em 2 meses meu giro de fraldas dobrou. Entrega sempre no prazo e o consultor é parceiro mesmo.",
-    image: "/src/assets/profile-joao.png",
+    image: profileJoao,
   },
   {
     name: "Maria Sousa",
     role: "Farmácia Saúde · Teresina/PI",
     text: "Saí do atravessador e minha margem aumentou 18%. Hoje só compro com a Rio Piranhas.",
-    image: "/src/assets/profile-maria.png",
+    image: profileMaria,
   },
   {
     name: "Carlos Lima",
     role: "Atacado Lima · Caxias/MA",
     text: "Atendimento via WhatsApp resolve tudo na hora. Fornecedor sério e com preço de verdade.",
-    image: "/src/assets/profile-carlos.png",
+    image: profileCarlos,
   },
 ];
 
