@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { gtagConversion, gtagEvent } from "@/lib/gtag";
+import { sendToSheets } from "@/lib/sheets";
 
 const STEPS = [
   {
@@ -23,6 +25,25 @@ const STEPS = [
   },
 ] as const;
 
+function maskCNPJ(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+function maskPhone(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length === 0) return "";
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  // 11 dígitos → celular: (XX) XXXXX-XXXX
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
 export const LeadForm = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -32,6 +53,8 @@ export const LeadForm = () => {
   const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
 
   const select = (value: string) => {
+    if (step === 0) gtagEvent("form_start", { form_name: "lead_form" });
+    gtagEvent("form_step_complete", { form_name: "lead_form", step: step + 1, answer: value });
     setAnswers((p) => ({ ...p, [STEPS[step].key]: value }));
     setTimeout(() => setStep((s) => s + 1), 180);
   };
@@ -42,18 +65,31 @@ export const LeadForm = () => {
       toast.error("Preencha todos os campos para continuar");
       return;
     }
+    gtagEvent("generate_lead", {
+      form_name: "lead_form",
+      segment: answers.segment,
+      volume: answers.volume,
+      state: answers.state,
+    });
+    gtagConversion();
+    sendToSheets({
+      name: contact.name,
+      email: contact.email,
+      whatsapp: contact.whatsapp,
+      cnpj: contact.cnpj,
+      segment: answers.segment,
+      volume: answers.volume,
+      state: answers.state,
+    }).catch(() => {});
     toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
     const msg = encodeURIComponent(
       `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero virar cliente Rio Piranhas. Segmento: ${answers.segment}, Volume: ${answers.volume}, Estado: ${answers.state}.`,
     );
-    
-    // Determinar o número de WhatsApp conforme o estado selecionado
     const phoneNumbers: Record<string, string> = {
       "Maranhão (MA)": "558695319157",
       "Piauí (PI)": "558694271798",
     };
-    
-    const phoneNumber = phoneNumbers[answers.state] || "5598000000000";
+    const phoneNumber = phoneNumbers[answers.state] || "558695319157";
     window.open(`https://wa.me/${phoneNumber}?text=${msg}`, "_blank");
   };
 
@@ -78,7 +114,7 @@ export const LeadForm = () => {
             {STEPS[step].title}
           </h3>
           <div className="space-y-2">
-            {STEPS[step].options.map((opt) => {
+            {(STEPS[step].options as readonly string[]).map((opt: string) => {
               const active = answers[STEPS[step].key] === opt;
               return (
                 <button
@@ -114,19 +150,50 @@ export const LeadForm = () => {
           <div className="space-y-3 pt-2">
             <div>
               <Label htmlFor="name" className="text-xs font-semibold">Seu nome</Label>
-              <Input id="name" placeholder="Nome completo" value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
+              <Input
+                id="name"
+                placeholder="Nome completo"
+                autoComplete="name"
+                value={contact.name}
+                onChange={(e) => setContact({ ...contact, name: e.target.value })}
+              />
             </div>
             <div>
               <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
+              <Input
+                id="email"
+                type="email"
+                inputMode="email"
+                placeholder="seu@email.com"
+                autoComplete="email"
+                value={contact.email}
+                onChange={(e) => setContact({ ...contact, email: e.target.value })}
+              />
             </div>
             <div>
               <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ da empresa</Label>
-              <Input id="cnpj" placeholder="00.000.000/0000-00" value={contact.cnpj} onChange={(e) => setContact({ ...contact, cnpj: e.target.value })} />
+              <Input
+                id="cnpj"
+                placeholder="00.000.000/0000-00"
+                inputMode="numeric"
+                maxLength={18}
+                autoComplete="off"
+                value={contact.cnpj}
+                onChange={(e) => setContact({ ...contact, cnpj: maskCNPJ(e.target.value) })}
+              />
             </div>
             <div>
               <Label htmlFor="wa" className="text-xs font-semibold">WhatsApp</Label>
-              <Input id="wa" placeholder="(98) 90000-0000" value={contact.whatsapp} onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })} />
+              <Input
+                id="wa"
+                type="tel"
+                inputMode="tel"
+                placeholder="(98) 90000-0000"
+                autoComplete="tel"
+                maxLength={15}
+                value={contact.whatsapp}
+                onChange={(e) => setContact({ ...contact, whatsapp: maskPhone(e.target.value) })}
+              />
             </div>
           </div>
           <Button type="submit" variant="cta" size="xl" className="w-full animate-pulse-soft">
