@@ -121,6 +121,7 @@ export const LeadForm = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "", email: "" });
   const [cnpjError, setCnpjError] = useState(false);
+  const [cnpjValid, setCnpjValid] = useState(false);
 
   const isFinal = step === STEPS.length;
   const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
@@ -135,10 +136,26 @@ export const LeadForm = () => {
   const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = maskCNPJ(e.target.value);
     setContact({ ...contact, cnpj: formatted });
-    if (formatted.replace(/\D/g, "").length === 14) {
-      setCnpjError(!isValidCNPJ(formatted));
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 14) {
+      const valid = isValidCNPJ(formatted);
+      setCnpjValid(valid);
+      setCnpjError(!valid);
     } else {
+      setCnpjValid(false);
       setCnpjError(false);
+    }
+  };
+
+  const handleCnpjBlur = () => {
+    const digits = contact.cnpj.replace(/\D/g, "");
+    if (digits.length > 0 && digits.length < 14) {
+      setCnpjError(true);
+      setCnpjValid(false);
+    } else if (digits.length === 14) {
+      const valid = isValidCNPJ(contact.cnpj);
+      setCnpjValid(valid);
+      setCnpjError(!valid);
     }
   };
 
@@ -270,10 +287,20 @@ export const LeadForm = () => {
                 autoComplete="off"
                 value={contact.cnpj}
                 onChange={handleCnpjChange}
-                className={cnpjError ? "border-red-500 focus-visible:ring-red-500" : ""}
+                onBlur={handleCnpjBlur}
+                className={
+                  cnpjError
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : cnpjValid
+                    ? "border-green-500 focus-visible:ring-green-500"
+                    : ""
+                }
               />
               {cnpjError && (
                 <p className="mt-1 text-xs text-red-500">CNPJ inválido. Verifique os números.</p>
+              )}
+              {cnpjValid && (
+                <p className="mt-1 text-xs text-green-600">CNPJ válido.</p>
               )}
             </div>
             <div>
@@ -290,7 +317,13 @@ export const LeadForm = () => {
               />
             </div>
           </div>
-          <Button type="submit" variant="cta" size="xl" className="w-full animate-pulse-soft">
+          <Button
+            type="submit"
+            variant="cta"
+            size="xl"
+            className="w-full animate-pulse-soft disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={cnpjError}
+          >
             <Check className="h-5 w-5" /> Quero falar com um consultor
           </Button>
           <p className="text-center text-[11px] text-muted-foreground">
