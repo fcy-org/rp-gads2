@@ -1,4 +1,5 @@
 const ADS_ID = "AW-17617048942";
+const CONVERSION_LABEL = "AW-17617048942/1PJBCMPPxp0cEO6qu9BB";
 
 declare global {
   interface Window {
@@ -16,7 +17,7 @@ function gtag(...args: unknown[]) {
 
 export function gtagConversion(value?: number) {
   gtag("event", "conversion", {
-    send_to: ADS_ID,
+    send_to: CONVERSION_LABEL,
     ...(value !== undefined && { value, currency: "BRL" }),
   });
 }

@@ -31,6 +31,12 @@ export interface LeadData {
 export async function sendToSheets(lead: LeadData): Promise<void> {
   const estado = extractStateCode(lead.state);
 
+  const respostaQuiz =
+    `Email: ${lead.email} | Cidade: - | ` +
+    `volume mensal de compras: ${lead.volume} | ` +
+    `segmento da empresa: ${lead.segment} | ` +
+    `Categorias: - | Media Faturamento: -`;
+
   const payload = {
     nomeCompleto: lead.name,
     email: lead.email,
@@ -39,8 +45,9 @@ export async function sendToSheets(lead: LeadData): Promise<void> {
     tipoDocumento: "cnpj",
     estado,
     cidade: "",
-    faturamento: lead.volume,
-    desempenho: lead.segment,
+    segmento: lead.segment,
+    volume: lead.volume,
+    resposta_quiz: respostaQuiz,
     produtos: [],
     mediaFaturamento: "",
     ...getUtmParams(),

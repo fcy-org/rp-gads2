@@ -92,6 +92,20 @@ function maskCNPJ(v: string): string {
   return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
 }
 
+function isValidCNPJ(cnpj: string): boolean {
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (str: string, len: number) => {
+    let sum = 0, pos = len - 7;
+    for (let i = len; i >= 1; i--) {
+      sum += +str[len - i] * pos--;
+      if (pos < 2) pos = 9;
+    }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  };
+  return calc(d, 12) === +d[12] && calc(d, 13) === +d[13];
+}
+
 function maskPhone(v: string): string {
   const d = v.replace(/\D/g, "").slice(0, 11);
   if (d.length === 0) return "";
@@ -106,6 +120,7 @@ export const LeadForm = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "", email: "" });
+  const [cnpjError, setCnpjError] = useState(false);
 
   const isFinal = step === STEPS.length;
   const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
@@ -117,10 +132,25 @@ export const LeadForm = () => {
     setTimeout(() => setStep((s) => s + 1), 180);
   };
 
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = maskCNPJ(e.target.value);
+    setContact({ ...contact, cnpj: formatted });
+    if (formatted.replace(/\D/g, "").length === 14) {
+      setCnpjError(!isValidCNPJ(formatted));
+    } else {
+      setCnpjError(false);
+    }
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!contact.name || !contact.whatsapp || !contact.cnpj || !contact.email) {
       toast.error("Preencha todos os campos para continuar");
+      return;
+    }
+    if (!isValidCNPJ(contact.cnpj)) {
+      setCnpjError(true);
+      toast.error("CNPJ inválido. Verifique e tente novamente.");
       return;
     }
     gtagEvent("generate_lead", {
@@ -239,8 +269,12 @@ export const LeadForm = () => {
                 maxLength={18}
                 autoComplete="off"
                 value={contact.cnpj}
-                onChange={(e) => setContact({ ...contact, cnpj: maskCNPJ(e.target.value) })}
+                onChange={handleCnpjChange}
+                className={cnpjError ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
+              {cnpjError && (
+                <p className="mt-1 text-xs text-red-500">CNPJ inválido. Verifique os números.</p>
+              )}
             </div>
             <div>
               <Label htmlFor="wa" className="text-xs font-semibold">WhatsApp</Label>
