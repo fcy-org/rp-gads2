@@ -23,6 +23,7 @@ export interface LeadData {
   email: string;
   whatsapp: string;
   cnpj: string;
+  city: string;
   segment: string;
   volume: string;
   state: string;
@@ -31,25 +32,35 @@ export interface LeadData {
 export async function sendToSheets(lead: LeadData): Promise<void> {
   const estado = extractStateCode(lead.state);
 
-  const respostaQuiz =
-    `Email: ${lead.email} | Cidade: - | ` +
-    `volume mensal de compras: ${lead.volume} | ` +
-    `segmento da empresa: ${lead.segment} | ` +
-    `Categorias: - | Media Faturamento: -`;
+  const respostaQuiz = [
+    `Email: ${lead.email || "-"}`,
+    `Cidade: ${lead.city || "-"}`,
+    `volume mensal de compras: ${lead.volume || "-"}`,
+    `segmento da empresa: ${lead.segment || "-"}`,
+    `Categorias: ${lead.segment || "-"}`,
+    `Media Faturamento: ${lead.volume || "-"}`,
+  ].join(" | ");
 
   const payload = {
     nomeCompleto: lead.name,
+    nome: lead.name,
     email: lead.email,
     telefone: lead.whatsapp,
+    whatsapp: lead.whatsapp,
     documento: lead.cnpj.replace(/\D/g, ""),
+    cnpj: lead.cnpj,
     tipoDocumento: "cnpj",
     estado,
-    cidade: "",
+    cidade: lead.city,
+    faturamento: "",
+    desempenho: lead.segment,
+    produtos: lead.segment ? [lead.segment] : [],
+    mediaFaturamento: lead.volume,
     segmento: lead.segment,
     volume: lead.volume,
+    quiz_segmento: lead.segment,
+    quiz_volume: lead.volume,
     resposta_quiz: respostaQuiz,
-    produtos: [],
-    mediaFaturamento: "",
     ...getUtmParams(),
   };
 

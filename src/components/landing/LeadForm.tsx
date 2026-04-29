@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { gtagConversion, gtagEvent } from "@/lib/gtag";
+import { trackClarityLead, trackMetaLead } from "@/lib/marketing";
 import { sendToSheets } from "@/lib/sheets";
 
 const NEW_TRACKING_URL = "/api/new-tracking/leads";
@@ -119,6 +120,7 @@ function maskPhone(v: string): string {
 export const LeadForm = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [city, setCity] = useState("");
   const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "", email: "" });
   const [cnpjError, setCnpjError] = useState(false);
   const [cnpjValid, setCnpjValid] = useState(false);
@@ -130,6 +132,11 @@ export const LeadForm = () => {
     if (step === 0) gtagEvent("form_start", { form_name: "lead_form" });
     gtagEvent("form_step_complete", { form_name: "lead_form", step: step + 1, answer: value });
     setAnswers((p) => ({ ...p, [STEPS[step].key]: value }));
+
+    if (STEPS[step].key === "state") {
+      return;
+    }
+
     setTimeout(() => setStep((s) => s + 1), 180);
   };
 
@@ -159,10 +166,14 @@ export const LeadForm = () => {
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contact.name || !contact.whatsapp || !contact.cnpj || !contact.email) {
       toast.error("Preencha todos os campos para continuar");
+      return;
+    }
+    if (!city.trim()) {
+      toast.error("Informe sua cidade para continuar");
       return;
     }
     if (!isValidCNPJ(contact.cnpj)) {
@@ -170,27 +181,47 @@ export const LeadForm = () => {
       toast.error("CNPJ inválido. Verifique e tente novamente.");
       return;
     }
+    const normalizedPhone = contact.whatsapp.replace(/\D/g, "");
+    try {
+      await sendToSheets({
+        name: contact.name,
+        email: contact.email,
+        whatsapp: contact.whatsapp,
+        cnpj: contact.cnpj,
+        city: city.trim(),
+        segment: answers.segment,
+        volume: answers.volume,
+        state: answers.state,
+      });
+    } catch {
+      toast.error("Não foi possível enviar os dados para a planilha.");
+      return;
+    }
+
+    await sendNewTracking(contact.name, normalizedPhone, contact.email);
     gtagEvent("generate_lead", {
       form_name: "lead_form",
       segment: answers.segment,
       volume: answers.volume,
       state: answers.state,
+      city: city.trim(),
     });
     gtagConversion();
-    const normalizedPhone = contact.whatsapp.replace(/\D/g, "");
-    sendToSheets({
-      name: contact.name,
-      email: contact.email,
-      whatsapp: contact.whatsapp,
-      cnpj: contact.cnpj,
+    trackMetaLead({
+      state: answers.state,
+      city: city.trim(),
       segment: answers.segment,
       volume: answers.volume,
+    });
+    trackClarityLead({
       state: answers.state,
-    }).catch(() => {});
-    sendNewTracking(contact.name, normalizedPhone, contact.email).catch(() => {});
+      city: city.trim(),
+      segment: answers.segment,
+      volume: answers.volume,
+    });
     toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
     const msg = encodeURIComponent(
-      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero virar cliente Rio Piranhas. Segmento: ${answers.segment}, Volume: ${answers.volume}, Estado: ${answers.state}.`,
+      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero virar cliente Rio Piranhas. Segmento: ${answers.segment}, Volume: ${answers.volume}, Estado: ${answers.state}, Cidade: ${city.trim()}.`,
     );
     const phoneNumbers: Record<string, string> = {
       "Maranhão (MA)": "558695319157",
@@ -240,6 +271,37 @@ export const LeadForm = () => {
               );
             })}
           </div>
+          {STEPS[step].key === "state" && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <Label htmlFor="city-step" className="text-xs font-semibold">Cidade</Label>
+                <Input
+                  id="city-step"
+                  placeholder={answers.state ? `Ex: ${answers.state === "Maranhão (MA)" ? "São Luís" : "Teresina"}` : "Digite sua cidade"}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="cta"
+                className="w-full"
+                onClick={() => {
+                  if (!answers.state) {
+                    toast.error("Selecione o estado para continuar");
+                    return;
+                  }
+                  if (!city.trim()) {
+                    toast.error("Informe sua cidade para continuar");
+                    return;
+                  }
+                  setStep((s) => s + 1);
+                }}
+              >
+                Continuar
+              </Button>
+            </div>
+          )}
           {step > 0 && (
             <button
               type="button"

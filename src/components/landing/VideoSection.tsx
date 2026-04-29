@@ -17,7 +17,7 @@ export const VideoSection = () => {
         </h2>
 
         <div className="mx-auto mt-8 max-w-3xl">
-          {/* @ts-ignore */}
+          {/* @ts-expect-error custom element provided by external player script */}
           <vturb-smartplayer id="vid-69ed28e055df2a8c627ba916" style={{ display: "block", margin: "0 auto", width: "100%" }} />
         </div>
       </div>
