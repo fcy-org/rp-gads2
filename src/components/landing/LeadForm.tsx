@@ -7,6 +7,64 @@ import { toast } from "sonner";
 import { gtagConversion, gtagEvent } from "@/lib/gtag";
 import { sendToSheets } from "@/lib/sheets";
 
+const NEW_TRACKING_URL = "/api/new-tracking/leads";
+const NEW_TRACKING_KEY = "u7hjat5pjvfs8m7ls2ndwefn";
+
+function getCookie(name: string): string {
+  const match = document.cookie.split(";").find((c) => c.trim().startsWith(name + "="));
+  return match ? match.split("=").slice(1).join("=").trim() : "";
+}
+
+function getFbclid(): string {
+  return new URLSearchParams(window.location.search).get("fbclid") || "";
+}
+
+function getFbc(): string {
+  const cookie = getCookie("_fbc");
+  if (cookie) return cookie;
+  const fbclid = getFbclid();
+  if (fbclid) return `fb.1.${Date.now()}.${fbclid}`;
+  return "";
+}
+
+function getFbp(): string {
+  return getCookie("_fbp");
+}
+
+function getUtmsForTracking() {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    utm_source: p.get("utm_source") ?? "",
+    utm_medium: p.get("utm_medium") ?? "",
+    utm_campaign: p.get("utm_campaign") ?? "",
+    utm_content: p.get("utm_content") ?? "",
+    utm_term: p.get("utm_term") ?? "",
+  };
+}
+
+async function sendNewTracking(name: string, phone: string, email: string) {
+  try {
+    await fetch(NEW_TRACKING_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-lead-capture-key": NEW_TRACKING_KEY,
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        email,
+        fbc: getFbc(),
+        fbp: getFbp(),
+        event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        ...getUtmsForTracking(),
+      }),
+    });
+  } catch (error) {
+    console.error("New tracking request error", error);
+  }
+}
+
 const STEPS = [
   {
     key: "segment",
@@ -72,6 +130,7 @@ export const LeadForm = () => {
       state: answers.state,
     });
     gtagConversion();
+    const normalizedPhone = contact.whatsapp.replace(/\D/g, "");
     sendToSheets({
       name: contact.name,
       email: contact.email,
@@ -81,6 +140,7 @@ export const LeadForm = () => {
       volume: answers.volume,
       state: answers.state,
     }).catch(() => {});
+    sendNewTracking(contact.name, normalizedPhone, contact.email).catch(() => {});
     toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
     const msg = encodeURIComponent(
       `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero virar cliente Rio Piranhas. Segmento: ${answers.segment}, Volume: ${answers.volume}, Estado: ${answers.state}.`,
