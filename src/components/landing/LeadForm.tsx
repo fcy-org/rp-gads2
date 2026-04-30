@@ -43,7 +43,14 @@ function getUtmsForTracking() {
   };
 }
 
-async function sendNewTracking(name: string, phone: string, email: string) {
+async function sendNewTracking(
+  name: string,
+  phone: string,
+  email: string,
+  cnpj: string,
+  state: string,
+  city: string,
+) {
   try {
     await fetch(NEW_TRACKING_URL, {
       method: "POST",
@@ -55,6 +62,9 @@ async function sendNewTracking(name: string, phone: string, email: string) {
         name,
         phone,
         email,
+        cnpj,
+        state,
+        city,
         fbc: getFbc(),
         fbp: getFbp(),
         event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -198,7 +208,14 @@ export const LeadForm = () => {
       return;
     }
 
-    await sendNewTracking(contact.name, normalizedPhone, contact.email);
+    await sendNewTracking(
+      contact.name,
+      normalizedPhone,
+      contact.email,
+      contact.cnpj.replace(/\D/g, ""),
+      answers.state,
+      city.trim(),
+    );
     gtagEvent("generate_lead", {
       form_name: "lead_form",
       segment: answers.segment,
