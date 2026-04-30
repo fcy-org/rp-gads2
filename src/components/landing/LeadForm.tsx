@@ -11,6 +11,11 @@ import { sendToSheets } from "@/lib/sheets";
 const NEW_TRACKING_URL = "/api/new-tracking/leads";
 const NEW_TRACKING_KEY = "u7hjat5pjvfs8m7ls2ndwefn";
 
+function extractStateCode(stateAnswer: string): string {
+  const match = stateAnswer.match(/\(([^)]+)\)/);
+  return match ? match[1] : stateAnswer;
+}
+
 function getCookie(name: string): string {
   const match = document.cookie.split(";").find((c) => c.trim().startsWith(name + "="));
   return match ? match.split("=").slice(1).join("=").trim() : "";
@@ -51,6 +56,8 @@ async function sendNewTracking(
   state: string,
   city: string,
 ) {
+  const stateCode = extractStateCode(state);
+
   try {
     await fetch(NEW_TRACKING_URL, {
       method: "POST",
@@ -63,8 +70,13 @@ async function sendNewTracking(
         phone,
         email,
         cnpj,
-        state,
+        documento: cnpj,
+        document: cnpj,
+        state: stateCode,
+        estado: stateCode,
+        state_label: state,
         city,
+        cidade: city,
         fbc: getFbc(),
         fbp: getFbp(),
         event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -134,6 +146,7 @@ export const LeadForm = () => {
   const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "", email: "" });
   const [cnpjError, setCnpjError] = useState(false);
   const [cnpjValid, setCnpjValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFinal = step === STEPS.length;
   const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
@@ -178,6 +191,7 @@ export const LeadForm = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!contact.name || !contact.whatsapp || !contact.cnpj || !contact.email) {
       toast.error("Preencha todos os campos para continuar");
       return;
@@ -191,6 +205,7 @@ export const LeadForm = () => {
       toast.error("CNPJ inválido. Verifique e tente novamente.");
       return;
     }
+    setIsSubmitting(true);
     const normalizedPhone = contact.whatsapp.replace(/\D/g, "");
     try {
       await sendToSheets({
@@ -204,18 +219,23 @@ export const LeadForm = () => {
         state: answers.state,
       });
     } catch {
+      setIsSubmitting(false);
       toast.error("Não foi possível enviar os dados para a planilha.");
       return;
     }
 
-    await sendNewTracking(
-      contact.name,
-      normalizedPhone,
-      contact.email,
-      contact.cnpj.replace(/\D/g, ""),
-      answers.state,
-      city.trim(),
-    );
+    try {
+      await sendNewTracking(
+        contact.name,
+        normalizedPhone,
+        contact.email,
+        contact.cnpj.replace(/\D/g, ""),
+        answers.state,
+        city.trim(),
+      );
+    } catch {
+      console.error("NewTracking request failed");
+    }
     gtagEvent("generate_lead", {
       form_name: "lead_form",
       segment: answers.segment,
@@ -236,6 +256,7 @@ export const LeadForm = () => {
       segment: answers.segment,
       volume: answers.volume,
     });
+    setIsSubmitting(false);
     toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
     const msg = encodeURIComponent(
       `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero virar cliente Rio Piranhas. Segmento: ${answers.segment}, Volume: ${answers.volume}, Estado: ${answers.state}, Cidade: ${city.trim()}.`,
@@ -401,9 +422,9 @@ export const LeadForm = () => {
             variant="cta"
             size="xl"
             className="w-full animate-pulse-soft disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={cnpjError}
+            disabled={cnpjError || isSubmitting}
           >
-            <Check className="h-5 w-5" /> Quero falar com um consultor
+            <Check className="h-5 w-5" /> {isSubmitting ? "Enviando dados..." : "Quero falar com um consultor"}
           </Button>
           <p className="text-center text-[11px] text-muted-foreground">
             Seus dados são confidenciais. Sem spam.
