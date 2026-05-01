@@ -26,10 +26,10 @@ const Index = () => {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <Hero />
+      <Brands />
       <Products />
       <Problem />
       <HowItWorks />
-      <Brands />
       <SocialProof />
       <Differential />
       <Logistics />

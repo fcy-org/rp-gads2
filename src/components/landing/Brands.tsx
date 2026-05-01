@@ -26,23 +26,41 @@ const brands = [
   { name: "Lux", logo: lux },
 ];
 
-export const Brands = () => (
-  <section className="bg-muted/40 py-14 sm:py-16">
-    <div className="container-tight">
-      <p className="text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
+type BrandsProps = {
+  compact?: boolean;
+};
+
+export const Brands = ({ compact = false }: BrandsProps) => {
+  const content = (
+    <>
+      <p className={`text-center text-sm font-bold uppercase tracking-wider ${compact ? "text-white/85" : "text-muted-foreground"}`}>
         Trabalhamos com as marcas que seu cliente procura
       </p>
-      <div className="mt-8 grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 md:grid-cols-6">
+      <div className={`grid grid-cols-3 gap-3 ${compact ? "mt-4" : "mt-8 sm:grid-cols-4 md:grid-cols-6"}`}>
         {brands.map((b) => (
           <div
             key={b.name}
             className="flex items-center justify-center rounded-lg bg-card px-3 py-4 transition-all hover:shadow-card"
             title={b.name}
           >
-            <img src={b.logo} alt={b.name} className="h-12 w-full object-contain" />
+            <img src={b.logo} alt={b.name} className="h-10 w-full object-contain sm:h-12" />
           </div>
         ))}
       </div>
-    </div>
-  </section>
-);
+    </>
+  );
+
+  if (compact) {
+    return (
+      <div className="rounded-2xl bg-white/10 p-4 shadow-blue ring-1 ring-white/20 backdrop-blur">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <section className="bg-muted/40 py-14 sm:py-16">
+      <div className="container-tight">{content}</div>
+    </section>
+  );
+};

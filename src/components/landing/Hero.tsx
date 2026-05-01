@@ -1,8 +1,7 @@
 import logo from "@/assets/logo.png";
 import hero from "@/assets/hero-warehouse.jpg";
-import { Button } from "@/components/ui/button";
 import { LeadForm } from "./LeadForm";
-import { Check, MessageCircle } from "lucide-react";
+import { Check } from "lucide-react";
 
 const bullets = [
   "52 anos de mercado",
