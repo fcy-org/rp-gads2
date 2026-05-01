@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 import { gtagConversion, gtagEvent } from "@/lib/gtag";
 import { trackClarityLead, trackMetaLead } from "@/lib/marketing";
@@ -140,6 +140,7 @@ function maskPhone(v: string): string {
 }
 
 export const LeadForm = () => {
+  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [city, setCity] = useState("");
   const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "", email: "" });
@@ -158,6 +159,28 @@ export const LeadForm = () => {
     startForm();
     gtagEvent("form_step_complete", { form_name: "lead_form", step: stepIndex + 1, answer: value });
     setAnswers((p) => ({ ...p, [key]: value }));
+  };
+
+  const progress = ((step + 1) / 3) * 100;
+
+  const goToContactStep = () => {
+    if (!answers.segment || !answers.volume) {
+      toast.error("Responda as duas perguntas para continuar");
+      return;
+    }
+    setStep(1);
+  };
+
+  const goToFinalStep = () => {
+    if (!answers.state) {
+      toast.error("Selecione o estado para continuar");
+      return;
+    }
+    if (!city.trim()) {
+      toast.error("Informe sua cidade para continuar");
+      return;
+    }
+    setStep(2);
   };
 
   const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,18 +301,64 @@ export const LeadForm = () => {
           <p className="mt-1 text-sm text-muted-foreground">Resposta em até 5 minutos no horário comercial.</p>
         </div>
 
-        <div className="space-y-4">
-          {STEPS.map((question, questionIndex) => (
-            <div key={question.key}>
-              <Label className="text-xs font-semibold">{question.title}</Label>
+        <div>
+          <div className="mb-2 flex items-center justify-between text-xs font-semibold text-muted-foreground">
+            <span>Etapa {step + 1} de 3</span>
+            <span className="text-primary">{Math.round(progress)}% concluído</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-gradient-blue transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {step === 0 && (
+          <div className="space-y-4">
+            {[STEPS[0], STEPS[1]].map((question, questionIndex) => (
+              <div key={question.key}>
+                <Label className="text-xs font-semibold">{question.title}</Label>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  {(question.options as readonly string[]).map((opt: string) => {
+                    const active = answers[question.key] === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => select(question.key, questionIndex, opt)}
+                        className={`flex min-h-11 w-full items-center justify-between rounded-xl border-2 px-3 py-2 text-left text-sm font-medium transition-all ${
+                          active
+                            ? "border-accent bg-accent text-accent-foreground"
+                            : "border-border bg-background hover:border-primary hover:bg-primary-soft"
+                        }`}
+                      >
+                        <span>{opt}</span>
+                        {active && <Check className="h-4 w-4 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            <Button type="button" variant="cta" className="w-full" onClick={goToContactStep}>
+              Continuar
+            </Button>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs font-semibold">{STEPS[2].title}</Label>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {(question.options as readonly string[]).map((opt: string) => {
-                  const active = answers[question.key] === opt;
+                {(STEPS[2].options as readonly string[]).map((opt: string) => {
+                  const active = answers.state === opt;
                   return (
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => select(question.key, questionIndex, opt)}
+                      onClick={() => select(STEPS[2].key, 2, opt)}
                       className={`flex min-h-11 w-full items-center justify-between rounded-xl border-2 px-3 py-2 text-left text-sm font-medium transition-all ${
                         active
                           ? "border-accent bg-accent text-accent-foreground"
@@ -303,9 +372,8 @@ export const LeadForm = () => {
                 })}
               </div>
             </div>
-          ))}
 
-          <div>
+            <div>
             <Label htmlFor="city-step" className="text-xs font-semibold">Cidade</Label>
             <Input
               id="city-step"
@@ -315,6 +383,19 @@ export const LeadForm = () => {
             />
           </div>
 
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setStep(0)}>
+                <ArrowLeft className="h-4 w-4" /> Voltar
+              </Button>
+              <Button type="button" variant="cta" className="flex-1" onClick={goToFinalStep}>
+                Continuar
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label htmlFor="name" className="text-xs font-semibold">Seu nome</Label>
@@ -378,20 +459,29 @@ export const LeadForm = () => {
               />
             </div>
           </div>
-        </div>
 
-        <Button
-          type="submit"
-          variant="cta"
-          size="xl"
-          className="w-full animate-pulse-soft disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={cnpjError || isSubmitting}
-        >
-          <Check className="h-5 w-5" /> {isSubmitting ? "Enviando dados..." : "Quero falar com um consultor"}
-        </Button>
-        <p className="text-center text-[11px] text-muted-foreground">
-          Seus dados são confidenciais. Sem spam.
-        </p>
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary"
+            >
+              <ArrowLeft className="h-3 w-3" /> Voltar
+            </button>
+
+            <Button
+              type="submit"
+              variant="cta"
+              size="xl"
+              className="w-full animate-pulse-soft disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={cnpjError || isSubmitting}
+            >
+              <Check className="h-5 w-5" /> {isSubmitting ? "Enviando dados..." : "Quero falar com um consultor"}
+            </Button>
+            <p className="text-center text-[11px] text-muted-foreground">
+              Seus dados são confidenciais. Sem spam.
+            </p>
+          </div>
+        )}
       </form>
     </div>
   );
