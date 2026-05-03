@@ -280,48 +280,26 @@ export const LeadForm = () => {
         </div>
 
         <div className="space-y-4">
-          {[STEPS[0], STEPS[1]].map((question, questionIndex) => (
+          {STEPS.map((question, questionIndex) => (
             <div key={question.key}>
-              <Label className="text-xs font-semibold">{question.title}</Label>
-              <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                {(question.options as readonly string[]).map((opt: string) => {
-                  const active = answers[question.key] === opt;
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => select(question.key, questionIndex, opt)}
-                      className={`flex min-h-11 w-full items-center justify-between rounded-xl border-2 px-3 py-2 text-left text-sm font-medium transition-all ${
-                        active
-                          ? "border-accent bg-accent text-accent-foreground"
-                          : "border-border bg-background hover:border-primary hover:bg-primary-soft"
-                      }`}
-                    >
-                      <span>{opt}</span>
-                      {active && <Check className="h-4 w-4 shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
+              <Label htmlFor={`${question.key}-step`} className="text-xs font-semibold">
+                {question.title}
+              </Label>
+              <Select
+                value={answers[question.key] || ""}
+                onValueChange={(value) => select(question.key, questionIndex, value)}
+              >
+                <SelectTrigger id={`${question.key}-step`} className="mt-2 h-11 rounded-xl">
+                  <SelectValue placeholder="Selecione uma opção" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(question.options as readonly string[]).map((opt: string) => (
+                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           ))}
-
-          <div>
-            <Label htmlFor="state-step" className="text-xs font-semibold">{STEPS[2].title}</Label>
-            <Select
-              value={answers.state || ""}
-              onValueChange={(value) => select(STEPS[2].key, 2, value)}
-            >
-              <SelectTrigger id="state-step" className="mt-2 h-11 rounded-xl">
-                <SelectValue placeholder="Selecione o estado" />
-              </SelectTrigger>
-              <SelectContent>
-                {(STEPS[2].options as readonly string[]).map((opt: string) => (
-                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div>
             <Label htmlFor="city-step" className="text-xs font-semibold">Cidade</Label>
