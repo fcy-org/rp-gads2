@@ -259,8 +259,8 @@ export const LeadForm = () => {
     <div className="rounded-2xl bg-card p-5 shadow-blue ring-1 ring-border sm:p-7">
       <form onSubmit={submit} onFocus={startForm} className="animate-float-up space-y-4">
         <div>
-          <h3 className="font-display text-xl font-bold sm:text-2xl">Catálogo com preço de fornecedor</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Catálogo com preços de fornecedor direto enviado no WhatsApp em até 5 minutos.</p>
+          <h3 className="font-display text-xl font-bold sm:text-2xl">Receba o catálogo e atendimento personalizado</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Catálogo com preço direto do fornecedor</p>
         </div>
 
         <div className="space-y-4">
