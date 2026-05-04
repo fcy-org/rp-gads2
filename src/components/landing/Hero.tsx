@@ -7,7 +7,7 @@ const bullets = [
   "52 anos de mercado",
   "+2.800 clientes ativos",
   "Entrega em até 48h",
-  "Atendimento via WhatsApp",
+  "Frete Grátis",
 ];
 
 export const Hero = () => {
