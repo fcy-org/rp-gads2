@@ -1,10 +1,10 @@
 import { MessageCircle, ClipboardList, Truck, PackageCheck } from "lucide-react";
 
 const steps = [
-  { icon: MessageCircle, title: "1. Fale com um consultor", desc: "Responda 3 perguntas rápidas e receba contato no WhatsApp." },
-  { icon: ClipboardList, title: "2. Monte seu pedido", desc: "Catálogo digital com preços de fornecedor direto." },
-  { icon: Truck, title: "3. Receba em 48h", desc: "Frete grátis para todo MA e PI nas condições combinadas." },
-  { icon: PackageCheck, title: "4. Venda mais", desc: "Estoque cheio, margem maior, cliente satisfeito." },
+  { icon: MessageCircle, title: "1. Preencha seus dados", desc: "Informe CNPJ e WhatsApp para receber o catálogo." },
+  { icon: ClipboardList, title: "2. Receba o catálogo no WhatsApp", desc: "Um consultor envia as condições e produtos mais indicados para sua empresa." },
+  { icon: PackageCheck, title: "3. Monte seu pedido", desc: "Escolha os produtos de maior giro para a sua loja." },
+  { icon: Truck, title: "4. Receba no MA ou PI", desc: "Entrega rápida e frete grátis nas condições combinadas." },
 ];
 
 export const HowItWorks = () => (

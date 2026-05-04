@@ -25,8 +25,8 @@ export interface LeadData {
   cnpj: string;
   city: string;
   segment: string;
-  volume: string;
   state: string;
+  volume?: string;
 }
 
 export async function sendToSheets(lead: LeadData): Promise<void> {
@@ -35,10 +35,8 @@ export async function sendToSheets(lead: LeadData): Promise<void> {
   const respostaQuiz = [
     `Email: ${lead.email || "-"}`,
     `Cidade: ${lead.city || "-"}`,
-    `volume mensal de compras: ${lead.volume || "-"}`,
     `segmento da empresa: ${lead.segment || "-"}`,
     `Categorias: ${lead.segment || "-"}`,
-    `Media Faturamento: ${lead.volume || "-"}`,
   ].join(" | ");
 
   const payload = {
@@ -55,11 +53,11 @@ export async function sendToSheets(lead: LeadData): Promise<void> {
     faturamento: "",
     desempenho: lead.segment,
     produtos: lead.segment ? [lead.segment] : [],
-    mediaFaturamento: lead.volume,
+    mediaFaturamento: "",
     segmento: lead.segment,
-    volume: lead.volume,
+    volume: "",
     quiz_segmento: lead.segment,
-    quiz_volume: lead.volume,
+    quiz_volume: "",
     resposta_quiz: respostaQuiz,
     ...getUtmParams(),
   };

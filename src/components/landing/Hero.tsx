@@ -44,10 +44,10 @@ export const Hero = () => {
             🚚 Distribuidora oficial · MA & PI
           </span>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] text-balance sm:text-4xl lg:text-5xl xl:text-6xl">
-            Pare de perder venda por <span className="text-accent">falta de fraldas, cosméticos</span> e produtos de giro
+            Receba o catálogo com <span className="text-accent">preços de fornecedor direto</span> para sua loja
           </h1>
           <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-            Fornecedor direto para empresas no <strong className="text-accent">Maranhão e Piauí</strong> com entrega rápida e frete grátis.
+            Distribuidora com 52 anos de mercado, +4.000 produtos e entrega rápida no <strong className="text-accent">Maranhão e Piauí</strong>. Preencha seus dados e receba o catálogo pelo WhatsApp.
           </p>
 
           <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
