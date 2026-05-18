@@ -12,31 +12,33 @@ import loreal from "@/assets/loreal-logo.png";
 import lux from "@/assets/Lux-Logo.png";
 
 const brands = [
-  { name: "Pampers", logo: pampers },
-  { name: "Huggies", logo: huggies },
-  { name: "MamyPoko", logo: mamypoko },
   { name: "Johnson's", logo: johnson },
   { name: "Nivea", logo: nivea },
   { name: "Dove", logo: dove },
   { name: "Colgate", logo: colgate },
   { name: "Palmolive", logo: palmolive },
-  { name: "Sundown", logo: sundown },
   { name: "Garnier", logo: garnier },
   { name: "L'Oréal", logo: loreal },
   { name: "Lux", logo: lux },
+  { name: "Sundown", logo: sundown },
+  { name: "Pampers", logo: pampers },
+  { name: "Huggies", logo: huggies },
+  { name: "MamyPoko", logo: mamypoko },
 ];
 
 export const Brands = () => (
   <section className="bg-muted/40 py-14 sm:py-16">
     <div className="container-tight">
       <p className="text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
-        Trabalhamos com as marcas que seu cliente procura
+        Cosméticos, higiene e perfumaria de marcas que seu cliente procura
       </p>
       <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {brands.map((b) => (
+        {brands.map((b, index) => (
           <div
             key={b.name}
-            className="group relative flex h-24 items-center justify-center rounded-2xl bg-white p-6 shadow-sm transition-all hover:scale-105 hover:shadow-md"
+            className={`group relative flex h-24 items-center justify-center rounded-2xl bg-white p-6 shadow-sm transition-all hover:scale-105 hover:shadow-md ${
+              index < 8 ? "ring-2 ring-accent/60" : ""
+            }`}
           >
             <img
               src={b.logo}

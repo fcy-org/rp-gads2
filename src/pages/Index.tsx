@@ -18,7 +18,7 @@ const Index = () => {
     "@type": "LocalBusiness",
     name: "Rio Piranhas",
     description:
-      "Distribuidora de fraldas, cosméticos e produtos de giro para empresas no Maranhão e Piauí. Entrega em até 48h, frete grátis e atendimento via WhatsApp.",
+      "Distribuidora atacado de cosméticos, higiene, perfumaria, fraldas e produtos de giro para lojistas no Maranhão e Piauí. Preço direto, entrega rápida e atendimento via WhatsApp.",
     areaServed: ["Maranhão", "Piauí"],
     aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "1200" },
   };

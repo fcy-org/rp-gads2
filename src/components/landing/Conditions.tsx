@@ -6,7 +6,7 @@ const conditions = [
   "Frete grátis para pedidos qualificados",
   "Catálogo digital com preço atualizado",
   "Bonificações e brindes em campanhas",
-  "Consultor dedicado via WhatsApp",
+  "Atendimento direto no WhatsApp",
 ];
 
 export const Conditions = () => (
@@ -15,8 +15,11 @@ export const Conditions = () => (
       <div className="mx-auto max-w-2xl text-center">
         <span className="text-sm font-bold uppercase tracking-wider text-primary">Condições comerciais</span>
         <h2 className="mt-2 font-display text-3xl font-extrabold text-balance sm:text-4xl">
-          Feito para o seu fluxo de caixa
+          Comece pequeno e aumente seu estoque com segurança
         </h2>
+        <p className="mt-3 text-muted-foreground">
+          Pedido mínimo acessível para lojistas do Maranhão e Piauí.
+        </p>
       </div>
 
       <div className="mt-8 inline-block w-full rounded-2xl bg-accent px-6 py-5 text-center shadow-cta sm:px-8">

@@ -1,12 +1,12 @@
 import { Baby, Sparkles, SprayCan, Cookie, Droplets, ShoppingBasket } from "lucide-react";
 
 const products = [
+  { icon: Sparkles, title: "Cosméticos", desc: "Itens de alta saída para vender todos os dias." },
+  { icon: SprayCan, title: "Higiene & Limpeza", desc: "Produtos essenciais que não podem faltar." },
+  { icon: Droplets, title: "Perfumaria", desc: "Sabonetes, hidratantes e cuidados pessoais." },
   { icon: Baby, title: "Fraldas", desc: "Linhas premium e populares para giro rápido." },
-  { icon: Sparkles, title: "Cosméticos", desc: "Marcas líderes em cuidados pessoais." },
-  { icon: SprayCan, title: "Higiene & Limpeza", desc: "Produtos essenciais de alto giro." },
-  { icon: Droplets, title: "Perfumaria", desc: "Sabonetes, hidratantes e mais." },
   { icon: Cookie, title: "Mercearia Seca", desc: "Itens estratégicos para gôndola cheia." },
-  { icon: ShoppingBasket, title: "Mix Completo", desc: "Tudo que sua loja precisa em um pedido." },
+  { icon: ShoppingBasket, title: "Mix Completo", desc: "Produtos de giro em um único pedido." },
 ];
 
 export const Products = () => (
@@ -15,10 +15,10 @@ export const Products = () => (
       <div className="mx-auto max-w-2xl text-center">
         <span className="text-sm font-bold uppercase tracking-wider text-primary">Mix de Produtos</span>
         <h2 className="mt-2 font-display text-3xl font-extrabold text-balance sm:text-4xl">
-          Tudo que sua loja precisa em <span className="text-primary">um único fornecedor</span>
+          Os produtos que mais giram na sua loja em <span className="text-primary">um único fornecedor</span>
         </h2>
         <p className="mt-3 text-muted-foreground">
-          Mais de 4.000 SKUs de marcas líderes para abastecer seu estoque.
+          Cosméticos, higiene e perfumaria com alta saída para aumentar seu faturamento.
         </p>
       </div>
 

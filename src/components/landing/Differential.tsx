@@ -1,12 +1,12 @@
-import { Truck, Headphones, Wallet, Award, Clock, ShieldCheck } from "lucide-react";
+import { Truck, Headphones, Wallet, Award, Clock, TrendingUp } from "lucide-react";
 
 const items = [
+  { icon: Wallet, title: "Preço de distribuidora", desc: "Compre direto, sem atravessador." },
+  { icon: TrendingUp, title: "Produtos de maior giro", desc: "Mix pensado para venda rápida no varejo." },
+  { icon: Clock, title: "Entrega rápida", desc: "Logística própria para MA e PI." },
+  { icon: Headphones, title: "Atendimento no WhatsApp", desc: "Consultor direto, sem URA, sem fila." },
   { icon: Truck, title: "Frete grátis", desc: "Para pedidos qualificados em todo MA e PI." },
-  { icon: Clock, title: "Entrega em 48h", desc: "Logística própria, prazo cumprido sempre." },
-  { icon: Wallet, title: "Preço de fornecedor", desc: "Compre direto, sem atravessador." },
-  { icon: Headphones, title: "Consultor dedicado", desc: "WhatsApp direto, sem URA, sem fila." },
   { icon: Award, title: "52 anos de mercado", desc: "Tradição e solidez no Nordeste." },
-  { icon: ShieldCheck, title: "Garantia total", desc: "Produtos originais, nota fiscal sempre." },
 ];
 
 export const Differential = () => (

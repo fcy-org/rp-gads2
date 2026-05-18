@@ -4,17 +4,17 @@ const reviews = [
   {
     name: "João Mendes",
     role: "Mercadinho Bom Preço · São Luís/MA",
-    text: "Em 2 meses meu giro de fraldas dobrou. Entrega sempre no prazo e o consultor é parceiro mesmo.",
+    text: "Os cosméticos começaram a girar muito mais aqui na loja.",
   },
   {
     name: "Maria Sousa",
     role: "Farmácia Saúde · Teresina/PI",
-    text: "Saí do atravessador e minha margem aumentou 18%. Hoje só compro com a Rio Piranhas.",
+    text: "Consegui melhorar minha margem comprando direto da distribuidora.",
   },
   {
     name: "Carlos Lima",
     role: "Atacado Lima · Caxias/MA",
-    text: "Atendimento via WhatsApp resolve tudo na hora. Fornecedor sério e com preço de verdade.",
+    text: "O atendimento no WhatsApp agiliza tudo.",
   },
 ];
 

@@ -1,10 +1,10 @@
 import { AlertTriangle, TrendingDown, Clock, PackageX } from "lucide-react";
 
 const problems = [
-  { icon: PackageX, title: "Prateleiras vazias", desc: "Cliente entra, não acha o que precisa e nunca mais volta." },
-  { icon: TrendingDown, title: "Margens apertadas", desc: "Comprando do atravessador, sua lucratividade despenca." },
-  { icon: Clock, title: "Entregas atrasadas", desc: "Fornecedor que some na hora que você mais precisa." },
-  { icon: AlertTriangle, title: "Pedido mínimo alto", desc: "Capital travado em estoque que não gira." },
+  { icon: PackageX, title: "Produtos que não giram", desc: "Dinheiro parado no estoque." },
+  { icon: TrendingDown, title: "Margem apertada", desc: "Comprando errado, sua loja lucra menos." },
+  { icon: AlertTriangle, title: "Falta dos produtos certos", desc: "Cliente procura e compra em outro lugar." },
+  { icon: Clock, title: "Fornecedor sem agilidade", desc: "Reposição lenta trava suas vendas." },
 ];
 
 export const Problem = () => (

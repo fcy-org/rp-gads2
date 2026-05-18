@@ -10,6 +10,6 @@ export const StickyCTA = () => (
     className="fixed inset-x-3 bottom-3 z-50 flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3.5 font-display font-extrabold text-accent-foreground shadow-cta animate-pulse-soft sm:hidden"
   >
     <MessageCircle className="h-5 w-5" />
-    Quero falar com um consultor
+    Receber preços de atacado
   </a>
 );

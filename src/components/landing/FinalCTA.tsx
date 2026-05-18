@@ -12,20 +12,20 @@ export const FinalCTA = () => (
         <Sparkles className="h-4 w-4" /> Vagas limitadas neste mês
       </span>
       <h2 className="mx-auto mt-5 max-w-3xl font-display text-3xl font-extrabold leading-tight text-balance sm:text-4xl lg:text-5xl">
-        Comece a comprar direto da fonte e <span className="text-accent">aumente sua margem</span> hoje
+        Abasteça sua loja com produtos que <span className="text-accent">realmente giram</span>
       </h2>
       <p className="mx-auto mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-        Fale agora com um consultor pelo WhatsApp e receba uma proposta sob medida para o seu negócio.
+        Receba atendimento no WhatsApp e veja os produtos mais vendidos para sua região.
       </p>
 
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Button
           variant="cta"
           size="xl"
-          className="animate-pulse-soft"
+          className="h-auto min-h-14 whitespace-normal py-3 text-center leading-tight animate-pulse-soft"
           onClick={() => document.getElementById("form")?.scrollIntoView({ behavior: "smooth" })}
         >
-          <MessageCircle className="h-5 w-5" /> Quero falar com um consultor
+          <MessageCircle className="h-5 w-5" /> Clique em Saiba Mais e receba preços de atacado
         </Button>
       </div>
 

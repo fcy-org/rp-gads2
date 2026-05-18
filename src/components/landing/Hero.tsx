@@ -3,14 +3,25 @@ import hero from "@/assets/hero-warehouse.jpg";
 import avatar1 from "@/assets/avatar-1.png";
 import avatar2 from "@/assets/avatar-2.png";
 import avatar3 from "@/assets/avatar-3.png";
+import dove from "@/assets/Dove_logo.png";
+import nivea from "@/assets/NIVEA-logo.png";
+import colgate from "@/assets/colgate-logo-1.svg";
+import palmolive from "@/assets/Palmolive_logo_2019.png";
 import { LeadForm } from "./LeadForm";
 import { Check } from "lucide-react";
 
 const bullets = [
-  "52 anos de mercado",
-  "+2.800 clientes ativos",
-  "Entrega em até 48h",
-  "Atendimento via WhatsApp",
+  "Produtos com maior giro",
+  "Preço direto da distribuidora",
+  "Entrega rápida MA e PI",
+  "Atendimento direto no WhatsApp",
+];
+
+const heroBrands = [
+  { name: "Dove", logo: dove },
+  { name: "Nivea", logo: nivea },
+  { name: "Colgate", logo: colgate },
+  { name: "Palmolive", logo: palmolive },
 ];
 
 export const Hero = () => {
@@ -37,20 +48,20 @@ export const Hero = () => {
             href="#form"
             className="hidden rounded-full bg-accent px-4 py-2 text-xs font-bold text-accent-foreground shadow-cta sm:inline-block"
           >
-            Falar agora
+            Saiba mais
           </a>
         </div>
 
         {/* Content */}
         <div className="mt-12 flex-1 text-white lg:mt-0">
           <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
-            🚚 Distribuidora oficial · MA & PI
+            🚚 Distribuidora Atacado · MA & PI
           </span>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] text-balance sm:text-4xl lg:text-5xl xl:text-6xl">
-            Pare de perder venda por <span className="text-accent">falta de fraldas, cosméticos</span> e produtos de giro
+            Compre direto da distribuidora atacado e <span className="text-accent">aumente sua margem</span>
           </h1>
           <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-            Fornecedor direto para empresas no <strong className="text-accent">Maranhão e Piauí</strong> com entrega rápida e frete grátis.
+            Cosméticos, higiene e perfumaria com alto giro e entrega rápida no <strong className="text-accent">Maranhão e Piauí</strong>.
           </p>
 
           <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
@@ -76,6 +87,19 @@ export const Hero = () => {
               ))}
             </div>
             <span>+2.800 lojistas confiam</span>
+          </div>
+
+          <div className="mt-5 max-w-lg rounded-xl bg-white/90 p-3 shadow-card backdrop-blur">
+            <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-primary-deep">
+              Marcas de giro para cosméticos, higiene e perfumaria
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {heroBrands.map((brand) => (
+                <div key={brand.name} className="flex h-10 items-center justify-center rounded-lg bg-white px-2">
+                  <img src={brand.logo} alt={`${brand.name} logo`} className="max-h-7 max-w-full object-contain" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
