@@ -25,7 +25,7 @@ const STEPS = [
   {
     key: "state",
     title: "Em qual estado sua empresa atua?",
-    options: ["Maranhão (MA)", "Piauí (PI)", "Outro"],
+    options: ["Maranhão (MA)", "Piauí (PI)"],
   },
 ] as const;
 
