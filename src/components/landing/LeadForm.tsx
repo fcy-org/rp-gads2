@@ -66,6 +66,24 @@ function getUtmsForTracking() {
   };
 }
 
+function maskCNPJ(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 14);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
+  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
+  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+}
+
+function maskPhone(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 async function sendNewTracking(
   name: string,
   phone: string,
@@ -273,14 +291,29 @@ export const LeadForm = () => {
             </div>
             <div>
               <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ da empresa</Label>
-              <Input id="cnpj" placeholder="00.000.000/0000-00" value={contact.cnpj} onChange={(e) => setContact({ ...contact, cnpj: e.target.value })} />
+              <Input
+                id="cnpj"
+                placeholder="00.000.000/0000-00"
+                inputMode="numeric"
+                maxLength={18}
+                value={contact.cnpj}
+                onChange={(e) => setContact({ ...contact, cnpj: maskCNPJ(e.target.value) })}
+              />
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Atendimento exclusivo para empresas e lojistas.
               </p>
             </div>
             <div>
               <Label htmlFor="wa" className="text-xs font-semibold">WhatsApp</Label>
-              <Input id="wa" placeholder="(98) 90000-0000" value={contact.whatsapp} onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })} />
+              <Input
+                id="wa"
+                type="tel"
+                inputMode="tel"
+                placeholder="(98) 90000-0000"
+                maxLength={15}
+                value={contact.whatsapp}
+                onChange={(e) => setContact({ ...contact, whatsapp: maskPhone(e.target.value) })}
+              />
             </div>
           </div>
           <Button
