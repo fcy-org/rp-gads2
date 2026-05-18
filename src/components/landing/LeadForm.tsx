@@ -87,8 +87,10 @@ function maskPhone(value: string): string {
 async function sendNewTracking(
   name: string,
   phone: string,
+  email: string,
   cnpj: string,
   state: string,
+  city: string,
   segment: string,
   volume: string,
 ) {
@@ -104,15 +106,15 @@ async function sendNewTracking(
       body: JSON.stringify({
         name,
         phone,
-        email: "",
+        email,
         cnpj,
         documento: cnpj,
         document: cnpj,
         state: stateCode,
         estado: stateCode,
         state_label: state,
-        city: "",
-        cidade: "",
+        city,
+        cidade: city,
         segment,
         segmento: segment,
         volume,
@@ -130,11 +132,12 @@ async function sendNewTracking(
 export const LeadForm = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [contact, setContact] = useState({ name: "", whatsapp: "", cnpj: "" });
+  const [contact, setContact] = useState({ email: "", name: "", whatsapp: "", cnpj: "" });
   const [hasStarted, setHasStarted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFinal = step === STEPS.length;
+  const currentStep = !isFinal ? STEPS[step] : null;
   const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
 
   const startForm = () => {
@@ -146,6 +149,11 @@ export const LeadForm = () => {
   const select = (value: string) => {
     const currentStep = STEPS[step];
     startForm();
+    if (currentStep.key === "state") {
+      setAnswers((p) => ({ ...p, state: value }));
+      return;
+    }
+
     gtagEvent("form_step_complete", {
       form_name: "lead_form",
       step: step + 1,
@@ -156,10 +164,32 @@ export const LeadForm = () => {
     setTimeout(() => setStep((s) => s + 1), 180);
   };
 
+  const continueFromState = () => {
+    const state = answers.state ?? "";
+    const city = answers.city?.trim() ?? "";
+    if (!state) {
+      toast.error("Selecione seu estado para continuar");
+      return;
+    }
+    if (!city) {
+      toast.error("Informe sua cidade para continuar");
+      return;
+    }
+
+    gtagEvent("form_step_complete", {
+      form_name: "lead_form",
+      step: step + 1,
+      field: "state_city",
+      answer: state,
+      city,
+    });
+    setStep((s) => s + 1);
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!contact.name || !contact.whatsapp || !contact.cnpj) {
+    if (!contact.email || !contact.name || !contact.whatsapp || !contact.cnpj) {
       toast.error("Preencha todos os campos para continuar");
       return;
     }
@@ -170,12 +200,15 @@ export const LeadForm = () => {
     const segment = answers.segment ?? "";
     const volume = answers.volume ?? "";
     const state = answers.state ?? "";
+    const city = answers.city?.trim() ?? "";
 
     try {
       await sendToSheets({
         name: contact.name,
+        email: contact.email,
         whatsapp: contact.whatsapp,
         cnpj: contact.cnpj,
+        city,
         segment,
         volume,
         state,
@@ -186,22 +219,23 @@ export const LeadForm = () => {
       return;
     }
 
-    await sendNewTracking(contact.name, normalizedPhone, normalizedCnpj, state, segment, volume);
+    await sendNewTracking(contact.name, normalizedPhone, contact.email, normalizedCnpj, state, city, segment, volume);
 
     gtagEvent("generate_lead", {
       form_name: "lead_form",
       segment,
       volume,
       state,
+      city,
     });
     gtagConversion();
-    trackMetaLead({ state, city: "", segment, volume });
-    trackClarityLead({ state, city: "", segment, volume });
+    trackMetaLead({ state, city, segment, volume });
+    trackClarityLead({ state, city, segment, volume });
 
     setIsSubmitting(false);
     toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
     const msg = encodeURIComponent(
-      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}. Quero receber preços de atacado e produtos de maior giro da Rio Piranhas. Segmento: ${segment}, Volume: ${volume}, Estado: ${state}.`,
+      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero receber preços de atacado e produtos de maior giro da Rio Piranhas. Segmento: ${segment}, Volume: ${volume}, Estado: ${state}, Cidade: ${city}.`,
     );
     const phoneNumbers: Record<string, string> = {
       "Maranhão (MA)": "558695319157",
@@ -238,11 +272,11 @@ export const LeadForm = () => {
       {!isFinal ? (
         <div key={step} className="animate-float-up">
           <h3 className="mb-4 font-display text-xl font-bold text-foreground sm:text-2xl">
-            {STEPS[step].title}
+            {currentStep?.title}
           </h3>
           <div className="space-y-2">
-            {STEPS[step].options.map((opt) => {
-              const active = answers[STEPS[step].key] === opt;
+            {currentStep?.options.map((opt) => {
+              const active = answers[currentStep.key] === opt;
               const isCosmetics = opt === "Loja de Cosméticos";
               return (
                 <button
@@ -270,6 +304,23 @@ export const LeadForm = () => {
               );
             })}
           </div>
+          {currentStep?.key === "state" && answers.state && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <Label htmlFor="city" className="text-xs font-semibold">Cidade</Label>
+                <Input
+                  id="city"
+                  placeholder={answers.state === "Maranhão (MA)" ? "Ex: São Luís" : "Ex: Teresina"}
+                  value={answers.city ?? ""}
+                  onChange={(e) => setAnswers((p) => ({ ...p, city: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
+              <Button type="button" variant="cta" size="lg" className="w-full" onClick={continueFromState}>
+                Continuar <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
           {step > 0 && (
             <button
               type="button"
@@ -285,6 +336,18 @@ export const LeadForm = () => {
           <h3 className="font-display text-xl font-bold sm:text-2xl">Veja preços de atacado e produtos de maior giro</h3>
           <p className="text-sm text-muted-foreground">Resposta em até 5 minutos no horário comercial.</p>
           <div className="space-y-3 pt-2">
+            <div>
+              <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                inputMode="email"
+                placeholder="seu@email.com"
+                autoComplete="email"
+                value={contact.email}
+                onChange={(e) => setContact({ ...contact, email: e.target.value })}
+              />
+            </div>
             <div>
               <Label htmlFor="name" className="text-xs font-semibold">Seu nome</Label>
               <Input id="name" placeholder="Nome completo" value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
