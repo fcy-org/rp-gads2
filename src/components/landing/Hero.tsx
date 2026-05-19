@@ -1,8 +1,8 @@
 import logo from "@/assets/logo.png";
 import hero from "@/assets/hero-warehouse.jpg";
-import avatar1 from "@/assets/avatar-1.png";
-import avatar2 from "@/assets/avatar-2.png";
-import avatar3 from "@/assets/avatar-3.png";
+import lojistaAvatar1 from "@/assets/lojista-avatar-1.jpg";
+import lojistaAvatar2 from "@/assets/lojista-avatar-2.jpg";
+import lojistaAvatar3 from "@/assets/lojista-avatar-3.jpg";
 import dove from "@/assets/Dove_logo.png";
 import nivea from "@/assets/NIVEA-logo.png";
 import colgate from "@/assets/colgate-logo-1.svg";
@@ -22,6 +22,12 @@ const heroBrands = [
   { name: "Nivea", logo: nivea },
   { name: "Colgate", logo: colgate },
   { name: "Palmolive", logo: palmolive },
+];
+
+const shopkeeperAvatars = [
+  { src: lojistaAvatar1, alt: "Lojista de cosmeticos satisfeita" },
+  { src: lojistaAvatar2, alt: "Lojista de higiene e perfumaria satisfeito" },
+  { src: lojistaAvatar3, alt: "Lojista de produtos de giro satisfeita" },
 ];
 
 export const Hero = () => {
@@ -58,7 +64,7 @@ export const Hero = () => {
             🚚 Distribuidora Atacado · MA & PI
           </span>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] text-balance sm:text-4xl lg:text-5xl xl:text-6xl">
-            Compre direto da distribuidora atacado e <span className="text-accent">aumente sua margem</span>
+            Compre direto da distribuidora no atacado e <span className="text-accent">aumente sua margem</span>
           </h1>
           <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
             Cosméticos, higiene e perfumaria com alto giro e entrega rápida no <strong className="text-accent">Maranhão e Piauí</strong>.
@@ -77,16 +83,16 @@ export const Hero = () => {
 
           <div className="mt-8 flex items-center gap-3 text-sm text-white/85">
             <div className="flex -space-x-2">
-              {[avatar1, avatar2, avatar3].map((img, i) => (
+              {shopkeeperAvatars.map((avatar) => (
                 <img
-                  key={i}
-                  src={img}
-                  alt={`Lojista satisfeito ${i + 1}`}
+                  key={avatar.alt}
+                  src={avatar.src}
+                  alt={avatar.alt}
                   className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm"
                 />
               ))}
             </div>
-            <span>+2.800 lojistas confiam</span>
+            <span>Mais de 28.000 lojistas confiam</span>
           </div>
 
           <div className="mt-5 max-w-lg rounded-xl bg-white/90 p-3 shadow-card backdrop-blur">

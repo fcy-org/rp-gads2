@@ -13,7 +13,7 @@ export const Footer = () => (
         </div>
         <div className="text-center text-xs sm:text-right">
           <div>© {new Date().getFullYear()} Rio Piranhas. Todos os direitos reservados.</div>
-          <div className="mt-1">CNPJ 00.000.000/0001-00</div>
+          <div className="mt-1">CNPJ 22.417.427/0001-22</div>
         </div>
       </div>
     </div>
