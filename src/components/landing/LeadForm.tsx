@@ -96,6 +96,13 @@ async function sendNewTracking(
 ) {
   const stateCode = extractStateCode(state);
 
+  const observacao = [
+    `Segmento: ${segment}`,
+    `Volume mensal: ${volume}`,
+    `Estado: ${state}`,
+    `Cidade: ${city}`,
+  ].join("\n");
+
   try {
     await fetch(NEW_TRACKING_URL, {
       method: "POST",
@@ -118,6 +125,7 @@ async function sendNewTracking(
         segment,
         segmento: segment,
         volume,
+        observacao,
         fbc: getFbc(),
         fbp: getFbp(),
         event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
