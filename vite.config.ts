@@ -12,10 +12,9 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
     proxy: {
-      "/api/new-tracking": {
+      "/api/webhooks": {
         target: "https://newtracking-sales-sys.vercel.app",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/new-tracking/, "/api/public"),
       },
     },
   },

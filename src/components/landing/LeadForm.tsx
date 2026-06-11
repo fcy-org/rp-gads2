@@ -8,8 +8,7 @@ import { gtagConversion, gtagEvent } from "@/lib/gtag";
 import { trackClarityLead, trackMetaLead } from "@/lib/marketing";
 import { sendToSheets } from "@/lib/sheets";
 
-const NEW_TRACKING_URL = "/api/new-tracking/leads";
-const NEW_TRACKING_KEY = "u7hjat5pjvfs8m7ls2ndwefn";
+const WEBHOOK_URL = "/api/webhooks/leads/cmpsco6tj00036wt3kna7cp5b";
 
 function extractStateCode(stateAnswer: string): string {
   const match = stateAnswer.match(/\(([^)]+)\)/);
@@ -48,7 +47,16 @@ function getUtmsForTracking() {
   };
 }
 
-async function sendNewTracking(
+function getTrackingParams() {
+  return {
+    fbc: getFbc(),
+    fbp: getFbp(),
+    event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    ...getUtmsForTracking(),
+  };
+}
+
+async function enviarLeadCRM(
   name: string,
   phone: string,
   email: string,
@@ -56,43 +64,35 @@ async function sendNewTracking(
   state: string,
   city: string,
   segment: string,
+  tracking: ReturnType<typeof getTrackingParams>,
 ) {
-  const stateCode = extractStateCode(state);
-
-  const observacao = [
+  const notes = [
     `Segmento: ${segment}`,
     `Estado: ${state}`,
     `Cidade: ${city}`,
   ].join("\n");
 
-  try {
-    await fetch(NEW_TRACKING_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-lead-capture-key": NEW_TRACKING_KEY,
-      },
-      body: JSON.stringify({
-        name,
-        phone,
-        email,
-        cnpj,
-        documento: cnpj,
-        document: cnpj,
-        state: stateCode,
-        estado: stateCode,
-        state_label: state,
-        city,
-        cidade: city,
-        observacao,
-        fbc: getFbc(),
-        fbp: getFbp(),
-        event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        ...getUtmsForTracking(),
-      }),
-    });
-  } catch (error) {
-    console.error("New tracking request error", error);
+  const payload = {
+    phone,
+    name,
+    email,
+    document: cnpj,
+    city,
+    state: extractStateCode(state),
+    pipeline_stage: "Novo Lead",
+    notes,
+    ...tracking,
+  };
+
+  const res = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    console.error("Webhook falhou", { status: res.status, data });
   }
 }
 
@@ -212,6 +212,8 @@ export const LeadForm = () => {
     }
     setIsSubmitting(true);
     const normalizedPhone = contact.phone.replace(/\D/g, "");
+    const tracking = getTrackingParams();
+
     try {
       await sendToSheets({
         name: contact.name,
@@ -229,7 +231,7 @@ export const LeadForm = () => {
     }
 
     try {
-      await sendNewTracking(
+      await enviarLeadCRM(
         contact.name,
         normalizedPhone,
         contact.email,
@@ -237,9 +239,10 @@ export const LeadForm = () => {
         state,
         city.trim(),
         segment,
+        tracking,
       );
     } catch {
-      console.error("NewTracking request failed");
+      console.error("Webhook falhou");
     }
 
     gtagEvent("generate_lead", {
@@ -249,7 +252,9 @@ export const LeadForm = () => {
       city: city.trim(),
     });
     gtagConversion();
-    trackMetaLead({ state, city: city.trim(), segment, volume: "" });
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Lead", {}, { eventID: tracking.event_id });
+    }
     trackClarityLead({ state, city: city.trim(), segment, volume: "" });
     setIsSubmitting(false);
     toast.success("Recebemos seu cadastro! Em breve enviaremos o catálogo pelo WhatsApp.");
