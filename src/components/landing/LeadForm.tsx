@@ -55,8 +55,15 @@ async function sendNewTracking(
   cnpj: string,
   state: string,
   city: string,
+  segment: string,
 ) {
   const stateCode = extractStateCode(state);
+
+  const observacao = [
+    `Segmento: ${segment}`,
+    `Estado: ${state}`,
+    `Cidade: ${city}`,
+  ].join("\n");
 
   try {
     await fetch(NEW_TRACKING_URL, {
@@ -77,6 +84,7 @@ async function sendNewTracking(
         state_label: state,
         city,
         cidade: city,
+        observacao,
         fbc: getFbc(),
         fbp: getFbp(),
         event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -228,6 +236,7 @@ export const LeadForm = () => {
         contact.cnpj.replace(/\D/g, ""),
         state,
         city.trim(),
+        segment,
       );
     } catch {
       console.error("NewTracking request failed");
