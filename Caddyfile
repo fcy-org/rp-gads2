@@ -1,8 +1,7 @@
 :80 {
     encode gzip
 
-    handle_path /api/new-tracking/* {
-        rewrite * /api/public{path}
+    handle /api/webhooks/* {
         reverse_proxy https://newtracking-sales-sys.vercel.app {
             header_up Host newtracking-sales-sys.vercel.app
         }
