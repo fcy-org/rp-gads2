@@ -1,13 +1,4 @@
-import { useEffect } from "react";
-
 export const VideoSection = () => {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://scripts.converteai.net/0b256e8c-1ea0-49a1-a6c2-4aa9d6840568/players/69ed28e055df2a8c627ba916/v4/player.js";
-    script.async = true;
-    document.head.appendChild(script);
-  }, []);
-
   return (
     <section className="bg-muted py-16 sm:py-20">
       <div className="container-tight text-center">
@@ -16,9 +7,16 @@ export const VideoSection = () => {
           Veja por dentro do nosso <span className="text-primary">centro de distribuição</span>
         </h2>
 
-        <div className="mx-auto mt-8 max-w-3xl">
-          {/* @ts-expect-error custom element provided by external player script */}
-          <vturb-smartplayer id="vid-69ed28e055df2a8c627ba916" style={{ display: "block", margin: "0 auto", width: "100%" }} />
+        <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-2xl shadow-lg">
+          <iframe
+            className="aspect-video w-full"
+            src="https://www.youtube.com/embed/H9jj7fPuBmI"
+            title="Vídeo Institucional Dec Rio Piranhas"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
         </div>
       </div>
     </section>
