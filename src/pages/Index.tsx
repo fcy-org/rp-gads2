@@ -2,7 +2,6 @@ import { Hero } from "@/components/landing/Hero";
 import { Products } from "@/components/landing/Products";
 import { Problem } from "@/components/landing/Problem";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Brands } from "@/components/landing/Brands";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { Differential } from "@/components/landing/Differential";
 import { Logistics } from "@/components/landing/Logistics";
@@ -26,7 +25,6 @@ const Index = () => {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
       <Hero />
-      <Brands />
       <Products />
       <Problem />
       <HowItWorks />
