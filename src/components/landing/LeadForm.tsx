@@ -2,32 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { gtagConversion, gtagEvent } from "@/lib/gtag";
 import { trackClarityLead, trackMetaLead } from "@/lib/marketing";
 import { sendToSheets } from "@/lib/sheets";
 
-const NEW_TRACKING_URL = "/api/new-tracking/leads";
-const NEW_TRACKING_KEY = "u7hjat5pjvfs8m7ls2ndwefn";
-
-const STEPS = [
-  {
-    key: "segment",
-    title: "Qual o segmento da sua empresa?",
-    options: ["Mercado / Mercadinho", "Farmácia", "Atacado / Distribuidor", "Loja de Cosméticos", "Outro"],
-  },
-  {
-    key: "volume",
-    title: "Qual seu volume mensal de compras?",
-    options: ["Até R$ 800", "R$ 800 a R$ 3.000", "R$ 3.000 a R$ 10.000", "Acima de R$ 10.000"],
-  },
-  {
-    key: "state",
-    title: "Em qual estado sua empresa atua?",
-    options: ["Maranhão (MA)", "Piauí (PI)"],
-  },
-] as const;
+const WEBHOOK_URL = "/api/webhooks/leads/cmpsco6tj00036wt3kna7cp5b";
 
 function extractStateCode(stateAnswer: string): string {
   const match = stateAnswer.match(/\(([^)]+)\)/);
@@ -66,25 +47,16 @@ function getUtmsForTracking() {
   };
 }
 
-function maskCNPJ(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 14);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
-  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`;
-  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`;
-  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
+function getTrackingParams() {
+  return {
+    fbc: getFbc(),
+    fbp: getFbp(),
+    event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    ...getUtmsForTracking(),
+  };
 }
 
-function maskPhone(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (!digits) return "";
-  if (digits.length <= 2) return `(${digits}`;
-  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-}
-
-async function sendNewTracking(
+async function enviarLeadCRM(
   name: string,
   phone: string,
   email: string,
@@ -92,61 +64,89 @@ async function sendNewTracking(
   state: string,
   city: string,
   segment: string,
-  volume: string,
+  tracking: ReturnType<typeof getTrackingParams>,
 ) {
-  const stateCode = extractStateCode(state);
-
-  const observacao = [
+  const notes = [
     `Segmento: ${segment}`,
-    `Volume mensal: ${volume}`,
     `Estado: ${state}`,
     `Cidade: ${city}`,
   ].join("\n");
 
-  try {
-    await fetch(NEW_TRACKING_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-lead-capture-key": NEW_TRACKING_KEY,
-      },
-      body: JSON.stringify({
-        name,
-        phone,
-        email,
-        cnpj,
-        documento: cnpj,
-        document: cnpj,
-        state: stateCode,
-        estado: stateCode,
-        state_label: state,
-        city,
-        cidade: city,
-        segment,
-        segmento: segment,
-        volume,
-        observacao,
-        fbc: getFbc(),
-        fbp: getFbp(),
-        event_id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        ...getUtmsForTracking(),
-      }),
-    });
-  } catch (error) {
-    console.error("New tracking request error", error);
+  const payload = {
+    phone,
+    name,
+    email,
+    document: cnpj,
+    city,
+    state: extractStateCode(state),
+    pipeline_stage: "Novo Lead",
+    notes,
+    ...tracking,
+  };
+
+  const res = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    console.error("Webhook falhou", { status: res.status, data });
   }
 }
 
-export const LeadForm = () => {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [contact, setContact] = useState({ email: "", name: "", whatsapp: "", cnpj: "" });
-  const [hasStarted, setHasStarted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const SEGMENTS = [
+  "Mercado / Mercadinho",
+  "Farmácia",
+  "Atacado / Distribuidor",
+  "Loja de Cosméticos",
+  "Outro",
+];
 
-  const isFinal = step === STEPS.length;
-  const currentStep = !isFinal ? STEPS[step] : null;
-  const progress = ((step + (isFinal ? 1 : 0)) / (STEPS.length + 1)) * 100;
+const STATES = ["Maranhão (MA)", "Piauí (PI)"];
+
+function maskCNPJ(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+function isValidCNPJ(cnpj: string): boolean {
+  const d = cnpj.replace(/\D/g, "");
+  if (d.length !== 14 || /^(\d)\1+$/.test(d)) return false;
+  const calc = (str: string, len: number) => {
+    let sum = 0, pos = len - 7;
+    for (let i = len; i >= 1; i--) {
+      sum += +str[len - i] * pos--;
+      if (pos < 2) pos = 9;
+    }
+    return sum % 11 < 2 ? 0 : 11 - (sum % 11);
+  };
+  return calc(d, 12) === +d[12] && calc(d, 13) === +d[13];
+}
+
+function maskPhone(v: string): string {
+  const d = v.replace(/\D/g, "").slice(0, 11);
+  if (d.length === 0) return "";
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+export const LeadForm = () => {
+  const [segment, setSegment] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [contact, setContact] = useState({ name: "", phone: "", cnpj: "", email: "" });
+  const [cnpjError, setCnpjError] = useState(false);
+  const [cnpjValid, setCnpjValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const startForm = () => {
     if (hasStarted) return;
@@ -154,71 +154,74 @@ export const LeadForm = () => {
     setHasStarted(true);
   };
 
-  const select = (value: string) => {
-    const currentStep = STEPS[step];
+  const handleSegmentSelect = (value: string) => {
     startForm();
-    if (currentStep.key === "state") {
-      setAnswers((p) => ({ ...p, state: value }));
-      return;
-    }
-
-    gtagEvent("form_step_complete", {
-      form_name: "lead_form",
-      step: step + 1,
-      field: currentStep.key,
-      answer: value,
-    });
-    setAnswers((p) => ({ ...p, [currentStep.key]: value }));
-    setTimeout(() => setStep((s) => s + 1), 180);
+    gtagEvent("form_step_complete", { form_name: "lead_form", step: 1, answer: value });
+    setSegment(value);
   };
 
-  const continueFromState = () => {
-    const state = answers.state ?? "";
-    const city = answers.city?.trim() ?? "";
-    if (!state) {
-      toast.error("Selecione seu estado para continuar");
-      return;
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = maskCNPJ(e.target.value);
+    setContact({ ...contact, cnpj: formatted });
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 14) {
+      const valid = isValidCNPJ(formatted);
+      setCnpjValid(valid);
+      setCnpjError(!valid);
+    } else {
+      setCnpjValid(false);
+      setCnpjError(false);
     }
-    if (!city) {
-      toast.error("Informe sua cidade para continuar");
-      return;
-    }
+  };
 
-    gtagEvent("form_step_complete", {
-      form_name: "lead_form",
-      step: step + 1,
-      field: "state_city",
-      answer: state,
-      city,
-    });
-    setStep((s) => s + 1);
+  const handleCnpjBlur = () => {
+    const digits = contact.cnpj.replace(/\D/g, "");
+    if (digits.length > 0 && digits.length < 14) {
+      setCnpjError(true);
+      setCnpjValid(false);
+    } else if (digits.length === 14) {
+      const valid = isValidCNPJ(contact.cnpj);
+      setCnpjValid(valid);
+      setCnpjError(!valid);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    if (!contact.email || !contact.name || !contact.whatsapp || !contact.cnpj) {
+    if (!segment) {
+      toast.error("Selecione o segmento da sua empresa para continuar");
+      return;
+    }
+    if (!state) {
+      toast.error("Selecione seu estado para continuar");
+      return;
+    }
+    if (!contact.name || !contact.phone || !contact.cnpj || !contact.email) {
       toast.error("Preencha todos os campos para continuar");
       return;
     }
-
+    if (!city.trim()) {
+      toast.error("Informe sua cidade para continuar");
+      return;
+    }
+    if (!isValidCNPJ(contact.cnpj)) {
+      setCnpjError(true);
+      toast.error("CNPJ inválido. Verifique e tente novamente.");
+      return;
+    }
     setIsSubmitting(true);
-    const normalizedPhone = contact.whatsapp.replace(/\D/g, "");
-    const normalizedCnpj = contact.cnpj.replace(/\D/g, "");
-    const segment = answers.segment ?? "";
-    const volume = answers.volume ?? "";
-    const state = answers.state ?? "";
-    const city = answers.city?.trim() ?? "";
+    const normalizedPhone = contact.phone.replace(/\D/g, "");
+    const tracking = getTrackingParams();
 
     try {
       await sendToSheets({
         name: contact.name,
         email: contact.email,
-        whatsapp: contact.whatsapp,
+        whatsapp: contact.phone,
         cnpj: contact.cnpj,
-        city,
+        city: city.trim(),
         segment,
-        volume,
         state,
       });
     } catch {
@@ -227,23 +230,36 @@ export const LeadForm = () => {
       return;
     }
 
-    await sendNewTracking(contact.name, normalizedPhone, contact.email, normalizedCnpj, state, city, segment, volume);
+    try {
+      await enviarLeadCRM(
+        contact.name,
+        normalizedPhone,
+        contact.email,
+        contact.cnpj.replace(/\D/g, ""),
+        state,
+        city.trim(),
+        segment,
+        tracking,
+      );
+    } catch {
+      console.error("Webhook falhou");
+    }
 
     gtagEvent("generate_lead", {
       form_name: "lead_form",
       segment,
-      volume,
       state,
-      city,
+      city: city.trim(),
     });
     gtagConversion();
-    trackMetaLead({ state, city, segment, volume });
-    trackClarityLead({ state, city, segment, volume });
-
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Lead", {}, { eventID: tracking.event_id });
+    }
+    trackClarityLead({ state, city: city.trim(), segment, volume: "" });
     setIsSubmitting(false);
-    toast.success("Recebemos seu cadastro! Em breve entraremos em contato via WhatsApp.");
+    toast.success("Recebemos seu cadastro! Em breve enviaremos o catálogo pelo WhatsApp.");
     const msg = encodeURIComponent(
-      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero receber preços de atacado e produtos de maior giro da Rio Piranhas. Segmento: ${segment}, Volume: ${volume}, Estado: ${state}, Cidade: ${city}.`,
+      `Olá! Sou ${contact.name}, CNPJ ${contact.cnpj}, Email: ${contact.email}. Quero receber o catálogo da Rio Piranhas. Segmento: ${segment}, Estado: ${state}, Cidade: ${city.trim()}.`,
     );
     const phoneNumbers: Record<string, string> = {
       "Maranhão (MA)": "558695319157",
@@ -255,95 +271,82 @@ export const LeadForm = () => {
 
   return (
     <div className="rounded-2xl bg-card p-5 shadow-blue ring-1 ring-border sm:p-7">
-      <div className="mb-5">
-        <h2 className="font-display text-xl font-extrabold text-foreground sm:text-2xl">
-          Receba o catálogo de atacado no WhatsApp
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Preencha os dados e receba atendimento direto com um consultor.
-        </p>
-      </div>
-
-      <div className="mb-5">
-        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-          <span>Etapa {Math.min(step + 1, STEPS.length + 1)} de {STEPS.length + 1}</span>
-          <span className="text-primary">{Math.round(progress)}% concluído</span>
+      <form onSubmit={submit} onFocus={startForm} className="animate-float-up space-y-4">
+        <div>
+          <h3 className="font-display text-xl font-bold sm:text-2xl">Receba o catálogo e atendimento personalizado</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Catálogo com preço direto do fornecedor</p>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-gradient-blue transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
 
-      {!isFinal ? (
-        <div key={step} className="animate-float-up">
-          <h3 className="mb-4 font-display text-xl font-bold text-foreground sm:text-2xl">
-            {currentStep?.title}
-          </h3>
-          <div className="space-y-2">
-            {currentStep?.options.map((opt) => {
-              const active = answers[currentStep.key] === opt;
-              const isCosmetics = opt === "Loja de Cosméticos";
-              return (
+        <div className="space-y-4">
+          {/* Segmento — botões visuais */}
+          <div>
+            <Label className="text-xs font-semibold">Qual o segmento da sua empresa?</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {SEGMENTS.map((seg) => (
                 <button
-                  key={opt}
+                  key={seg}
                   type="button"
-                  onClick={() => select(opt)}
-                  className={`group flex w-full items-center justify-between rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition-all ${
-                    active
-                      ? "border-accent bg-accent text-accent-foreground"
-                      : isCosmetics
-                        ? "border-primary bg-accent/20 hover:border-primary hover:bg-accent/30"
-                        : "border-border bg-background hover:border-primary hover:bg-primary-soft"
+                  onClick={() => handleSegmentSelect(seg)}
+                  className={`rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition-all ${
+                    segment === seg
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:border-primary/50"
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    {opt}
-                    {isCosmetics && (
-                      <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-extrabold uppercase text-primary-foreground">
-                        Mais comum
-                      </span>
-                    )}
-                  </span>
-                  <ArrowRight className="h-4 w-4 opacity-0 transition group-hover:opacity-100" />
+                  {seg}
                 </button>
-              );
-            })}
-          </div>
-          {currentStep?.key === "state" && answers.state && (
-            <div className="mt-4 space-y-3">
-              <div>
-                <Label htmlFor="city" className="text-xs font-semibold">Cidade</Label>
-                <Input
-                  id="city"
-                  placeholder={answers.state === "Maranhão (MA)" ? "Ex: São Luís" : "Ex: Teresina"}
-                  value={answers.city ?? ""}
-                  onChange={(e) => setAnswers((p) => ({ ...p, city: e.target.value }))}
-                  className="mt-2"
-                />
-              </div>
-              <Button type="button" variant="cta" size="lg" className="w-full" onClick={continueFromState}>
-                Continuar <ArrowRight className="h-4 w-4" />
-              </Button>
+              ))}
             </div>
-          )}
-          {step > 0 && (
-            <button
-              type="button"
-              onClick={() => setStep((s) => s - 1)}
-              className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary"
-            >
-              <ArrowLeft className="h-3 w-3" /> Voltar
-            </button>
-          )}
-        </div>
-      ) : (
-        <form onSubmit={submit} onFocus={startForm} className="animate-float-up space-y-3">
-          <h3 className="font-display text-xl font-bold sm:text-2xl">Veja preços de atacado e produtos de maior giro</h3>
-          <p className="text-sm text-muted-foreground">Resposta em até 5 minutos no horário comercial.</p>
-          <div className="space-y-3 pt-2">
+          </div>
+
+          {/* Estado */}
+          <div>
+            <Label className="text-xs font-semibold">Estado</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {STATES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { startForm(); setState(s); }}
+                  className={`rounded-xl border px-3 py-2.5 text-left text-xs font-semibold transition-all ${
+                    state === s
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cidade */}
+          <div>
+            <Label htmlFor="city-input" className="text-xs font-semibold">Cidade</Label>
+            <Input
+              id="city-input"
+              placeholder={state ? `Ex: ${state === "Maranhão (MA)" ? "São Luís" : "Teresina"}` : "Digite sua cidade"}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {/* Nome e Sobrenome */}
+            <div className="sm:col-span-2">
+              <Label htmlFor="name" className="text-xs font-semibold">Nome e Sobrenome</Label>
+              <Input
+                id="name"
+                placeholder="Nome e Sobrenome"
+                autoComplete="name"
+                value={contact.name}
+                onChange={(e) => setContact({ ...contact, name: e.target.value })}
+                className="mt-2"
+              />
+            </div>
+
+            {/* Email */}
             <div>
               <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
               <Input
@@ -354,12 +357,11 @@ export const LeadForm = () => {
                 autoComplete="email"
                 value={contact.email}
                 onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                className="mt-2"
               />
             </div>
-            <div>
-              <Label htmlFor="name" className="text-xs font-semibold">Seu nome</Label>
-              <Input id="name" placeholder="Nome completo" value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
-            </div>
+
+            {/* CNPJ */}
             <div>
               <Label htmlFor="cnpj" className="text-xs font-semibold">CNPJ da empresa</Label>
               <Input
@@ -367,42 +369,58 @@ export const LeadForm = () => {
                 placeholder="00.000.000/0000-00"
                 inputMode="numeric"
                 maxLength={18}
+                autoComplete="off"
                 value={contact.cnpj}
-                onChange={(e) => setContact({ ...contact, cnpj: maskCNPJ(e.target.value) })}
+                onChange={handleCnpjChange}
+                onBlur={handleCnpjBlur}
+                className={`mt-2 ${
+                  cnpjError
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : cnpjValid
+                    ? "border-green-500 focus-visible:ring-green-500"
+                    : ""
+                }`}
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Atendimento exclusivo para empresas e lojistas.
-              </p>
+              {cnpjError && (
+                <p className="mt-1 text-xs text-red-500">CNPJ inválido. Verifique os números.</p>
+              )}
+              {cnpjValid && (
+                <p className="mt-1 text-xs text-green-600">CNPJ válido.</p>
+              )}
             </div>
+
+            {/* Telefone */}
             <div>
-              <Label htmlFor="wa" className="text-xs font-semibold">WhatsApp</Label>
+              <Label htmlFor="phone" className="text-xs font-semibold">Telefone / WhatsApp</Label>
               <Input
-                id="wa"
+                id="phone"
                 type="tel"
                 inputMode="tel"
                 placeholder="(98) 90000-0000"
+                autoComplete="tel"
                 maxLength={15}
-                value={contact.whatsapp}
-                onChange={(e) => setContact({ ...contact, whatsapp: maskPhone(e.target.value) })}
+                value={contact.phone}
+                onChange={(e) => setContact({ ...contact, phone: maskPhone(e.target.value) })}
+                className="mt-2"
               />
             </div>
           </div>
+
           <Button
             type="submit"
             variant="cta"
             size="xl"
-            className="h-auto min-h-14 w-full whitespace-normal py-3 text-center leading-tight animate-pulse-soft disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting}
+            className="w-full animate-pulse-soft disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={cnpjError || isSubmitting}
           >
-            <Check className="h-5 w-5" /> {isSubmitting ? "Enviando dados..." : "Clique em Saiba Mais e receba preços de atacado"}
+            <Check className="h-5 w-5" />
+            {isSubmitting ? "Enviando dados..." : "Quero receber o catálogo agora"}
           </Button>
-          <ul className="space-y-1 text-[11px] font-medium text-muted-foreground">
-            <li>✔ Atendimento via WhatsApp em poucos minutos</li>
-            <li>✔ Catálogo exclusivo para empresas</li>
-            <li>✔ Preços atualizados direto da distribuidora</li>
-          </ul>
-        </form>
-      )}
+          <p className="text-center text-[11px] text-muted-foreground">
+            Seus dados são confidenciais. Sem spam.
+          </p>
+        </div>
+      </form>
     </div>
   );
 };

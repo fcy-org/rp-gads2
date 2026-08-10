@@ -1,4 +1,4 @@
-import map from "@/assets/map-region.png";
+import map from "@/assets/Mapa.png";
 import { MapPin, Truck } from "lucide-react";
 
 const stats = [

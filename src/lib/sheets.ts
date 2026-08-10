@@ -12,6 +12,7 @@ function getUtmParams() {
   };
 }
 
+// "Maranhão (MA)" → "MA" | "Piauí (PI)" → "PI"
 function extractStateCode(stateAnswer: string): string {
   const match = stateAnswer.match(/\(([^)]+)\)/);
   return match ? match[1] : stateAnswer;
@@ -19,10 +20,10 @@ function extractStateCode(stateAnswer: string): string {
 
 export interface LeadData {
   name: string;
-  email?: string;
+  email: string;
   whatsapp: string;
   cnpj: string;
-  city?: string;
+  city: string;
   segment: string;
   state: string;
   volume?: string;
@@ -30,41 +31,40 @@ export interface LeadData {
 
 export async function sendToSheets(lead: LeadData): Promise<void> {
   const estado = extractStateCode(lead.state);
-  const email = lead.email ?? "";
-  const city = lead.city ?? "";
-  const volume = lead.volume ?? "";
 
   const respostaQuiz = [
-    `Email: ${email || "-"}`,
-    `Cidade: ${city || "-"}`,
+    `Email: ${lead.email || "-"}`,
+    `Cidade: ${lead.city || "-"}`,
     `segmento da empresa: ${lead.segment || "-"}`,
     `Categorias: ${lead.segment || "-"}`,
-    `Volume: ${volume || "-"}`,
   ].join(" | ");
 
   const payload = {
     nomeCompleto: lead.name,
     nome: lead.name,
-    email,
+    email: lead.email,
     telefone: lead.whatsapp,
     whatsapp: lead.whatsapp,
     documento: lead.cnpj.replace(/\D/g, ""),
     cnpj: lead.cnpj,
     tipoDocumento: "cnpj",
     estado,
-    cidade: city,
-    faturamento: volume,
+    cidade: lead.city,
+    faturamento: "",
     desempenho: lead.segment,
     produtos: lead.segment ? [lead.segment] : [],
-    mediaFaturamento: volume,
+    mediaFaturamento: "",
     segmento: lead.segment,
-    volume,
+    volume: "",
     quiz_segmento: lead.segment,
-    quiz_volume: volume,
+    quiz_volume: "",
     resposta_quiz: respostaQuiz,
     ...getUtmParams(),
   };
 
+  // text/plain é o único Content-Type permitido em modo no-cors.
+  // O App Script lê e.postData.contents como string bruta,
+  // então JSON.parse() no servidor funciona normalmente.
   await fetch(SHEETS_URL, {
     method: "POST",
     mode: "no-cors",

@@ -1,11 +1,10 @@
-import { MessageCircle, ClipboardList, Truck, PackageCheck, TrendingUp } from "lucide-react";
+import { MessageCircle, ClipboardList, Truck, PackageCheck } from "lucide-react";
 
 const steps = [
-  { icon: ClipboardList, title: "1. Preencha seus dados", desc: "Informe seu segmento, volume de compra e estado." },
-  { icon: MessageCircle, title: "2. Receba o catálogo no WhatsApp", desc: "Um consultor envia as condições de atacado para sua empresa." },
-  { icon: TrendingUp, title: "3. Veja os produtos de maior giro", desc: "Compare itens com alta saída para sua região." },
-  { icon: PackageCheck, title: "4. Monte seu pedido com um consultor", desc: "Escolha o mix certo para margem, giro e reposição." },
-  { icon: Truck, title: "5. Receba rápido no MA ou PI", desc: "Entrega ágil para manter sua loja abastecida." },
+  { icon: MessageCircle, title: "1. Preencha seus dados", desc: "Informe CNPJ e WhatsApp para receber o catálogo." },
+  { icon: ClipboardList, title: "2. Receba o catálogo no WhatsApp", desc: "Um consultor envia as condições e produtos mais indicados para sua empresa." },
+  { icon: PackageCheck, title: "3. Monte seu pedido", desc: "Escolha os produtos de maior giro para a sua loja." },
+  { icon: Truck, title: "4. Receba no MA ou PI", desc: "Entrega rápida e frete grátis nas condições combinadas." },
 ];
 
 export const HowItWorks = () => (
@@ -21,7 +20,7 @@ export const HowItWorks = () => (
       <div className="relative mt-12">
         {/* Progress line - desktop */}
         <div className="absolute left-0 right-0 top-7 hidden h-1 bg-gradient-blue lg:block" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-6 lg:grid-cols-4">
           {steps.map(({ icon: Icon, title, desc }, i) => (
             <div key={title} className="relative text-center">
               <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-blue ring-4 ring-background">

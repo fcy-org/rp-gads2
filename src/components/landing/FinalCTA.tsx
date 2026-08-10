@@ -12,22 +12,13 @@ export const FinalCTA = () => (
         <Sparkles className="h-4 w-4" /> Vagas limitadas neste mês
       </span>
       <h2 className="mx-auto mt-5 max-w-3xl font-display text-3xl font-extrabold leading-tight text-balance sm:text-4xl lg:text-5xl">
-        Abasteça sua loja com produtos que <span className="text-accent">realmente giram</span>
+        Comece a comprar direto da fonte e <span className="text-accent">aumente sua margem</span> hoje
       </h2>
       <p className="mx-auto mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-        Receba atendimento no WhatsApp e veja os produtos mais vendidos para sua região.
+        Fale agora com um consultor pelo WhatsApp e receba uma proposta sob medida para o seu negócio.
       </p>
 
-      <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Button
-          variant="cta"
-          size="xl"
-          className="h-auto min-h-14 whitespace-normal py-3 text-center leading-tight animate-pulse-soft"
-          onClick={() => document.getElementById("form")?.scrollIntoView({ behavior: "smooth" })}
-        >
-          <MessageCircle className="h-5 w-5" /> Clique em Saiba Mais e receba preços de atacado
-        </Button>
-      </div>
+
 
       <p className="mt-4 text-sm text-white/80">
         ⚡ Resposta em até 5 minutos no horário comercial

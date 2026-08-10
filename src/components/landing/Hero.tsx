@@ -1,33 +1,13 @@
 import logo from "@/assets/logo.png";
 import hero from "@/assets/hero-warehouse.jpg";
-import lojistaAvatar1 from "@/assets/lojista-avatar-1.jpg";
-import lojistaAvatar2 from "@/assets/lojista-avatar-2.jpg";
-import lojistaAvatar3 from "@/assets/lojista-avatar-3.jpg";
-import dove from "@/assets/Dove_logo.png";
-import nivea from "@/assets/NIVEA-logo.png";
-import colgate from "@/assets/colgate-logo-1.svg";
-import palmolive from "@/assets/Palmolive_logo_2019.png";
 import { LeadForm } from "./LeadForm";
 import { Check } from "lucide-react";
 
 const bullets = [
-  "Produtos com maior giro",
-  "Preço direto da distribuidora",
-  "Entrega rápida MA e PI",
-  "Atendimento direto no WhatsApp",
-];
-
-const heroBrands = [
-  { name: "Dove", logo: dove },
-  { name: "Nivea", logo: nivea },
-  { name: "Colgate", logo: colgate },
-  { name: "Palmolive", logo: palmolive },
-];
-
-const shopkeeperAvatars = [
-  { src: lojistaAvatar1, alt: "Lojista de cosmeticos satisfeita" },
-  { src: lojistaAvatar2, alt: "Lojista de higiene e perfumaria satisfeito" },
-  { src: lojistaAvatar3, alt: "Lojista de produtos de giro satisfeita" },
+  "52 anos de mercado",
+  "+2.800 clientes ativos",
+  "Entrega em até 48h",
+  "Frete Grátis",
 ];
 
 export const Hero = () => {
@@ -54,20 +34,20 @@ export const Hero = () => {
             href="#form"
             className="hidden rounded-full bg-accent px-4 py-2 text-xs font-bold text-accent-foreground shadow-cta sm:inline-block"
           >
-            Saiba mais
+            Falar agora
           </a>
         </div>
 
         {/* Content */}
         <div className="mt-12 flex-1 text-white lg:mt-0">
           <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
-            🚚 Distribuidora Atacado · MA & PI
+            🚚 Distribuidora oficial · MA & PI
           </span>
           <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.05] text-balance sm:text-4xl lg:text-5xl xl:text-6xl">
-            Compre direto da distribuidora no atacado e <span className="text-accent">aumente sua margem</span>
+            Receba o catálogo com <span className="text-accent">preços de fornecedor direto</span> para sua loja
           </h1>
           <p className="mt-4 max-w-xl text-base text-white/90 sm:text-lg">
-            Cosméticos, higiene e perfumaria com alto giro e entrega rápida no <strong className="text-accent">Maranhão e Piauí</strong>.
+            Distribuidora com 52 anos de mercado, +4.000 produtos e entrega rápida no <strong className="text-accent">Maranhão e Piauí</strong>. Preencha seus dados e receba o catálogo pelo WhatsApp.
           </p>
 
           <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
@@ -81,30 +61,14 @@ export const Hero = () => {
             ))}
           </ul>
 
-          <div className="mt-8 flex items-center gap-3 text-sm text-white/85">
-            <div className="flex -space-x-2">
-              {shopkeeperAvatars.map((avatar) => (
-                <img
-                  key={avatar.alt}
-                  src={avatar.src}
-                  alt={avatar.alt}
-                  className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm"
-                />
-              ))}
-            </div>
-            <span>Mais de 28.000 lojistas confiam</span>
-          </div>
-
-          <div className="mt-5 max-w-lg rounded-xl bg-white/90 p-3 shadow-card backdrop-blur">
-            <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-primary-deep">
-              Marcas de giro para cosméticos, higiene e perfumaria
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {heroBrands.map((brand) => (
-                <div key={brand.name} className="flex h-10 items-center justify-center rounded-lg bg-white px-2">
-                  <img src={brand.logo} alt={`${brand.name} logo`} className="max-h-7 max-w-full object-contain" />
-                </div>
-              ))}
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="flex items-center gap-3 text-sm text-white/85">
+              <div className="flex -space-x-2">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&crop=faces&fit=crop" alt="Cliente" className="h-8 w-8 rounded-full border-2 border-white object-cover" />
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&crop=faces&fit=crop" alt="Cliente" className="h-8 w-8 rounded-full border-2 border-white object-cover" />
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&crop=faces&fit=crop" alt="Cliente" className="h-8 w-8 rounded-full border-2 border-white object-cover" />
+              </div>
+              <span>+2.800 lojistas confiam</span>
             </div>
           </div>
         </div>

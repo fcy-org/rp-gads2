@@ -1,20 +1,26 @@
 import { Star, Quote } from "lucide-react";
+import profileJoao from "@/assets/profile-joao.png";
+import profileMaria from "@/assets/profile-maria.png";
+import profileCarlos from "@/assets/profile-carlos.png";
 
 const reviews = [
   {
     name: "João Mendes",
     role: "Mercadinho Bom Preço · São Luís/MA",
-    text: "Os cosméticos começaram a girar muito mais aqui na loja.",
+    text: "Em 2 meses meu giro de fraldas dobrou. Entrega sempre no prazo e o consultor é parceiro mesmo.",
+    image: profileJoao,
   },
   {
     name: "Maria Sousa",
     role: "Farmácia Saúde · Teresina/PI",
-    text: "Consegui melhorar minha margem comprando direto da distribuidora.",
+    text: "Saí do atravessador e minha margem aumentou 18%. Hoje só compro com a Rio Piranhas.",
+    image: profileMaria,
   },
   {
     name: "Carlos Lima",
     role: "Atacado Lima · Caxias/MA",
-    text: "O atendimento no WhatsApp agiliza tudo.",
+    text: "Atendimento via WhatsApp resolve tudo na hora. Fornecedor sério e com preço de verdade.",
+    image: profileCarlos,
   },
 ];
 
@@ -41,9 +47,16 @@ export const SocialProof = () => (
                 <Star key={i} className="h-4 w-4 fill-current" />
               ))}
             </div>
-            <div className="mt-3">
-              <div className="font-display font-bold text-foreground">{r.name}</div>
-              <div className="text-xs text-muted-foreground">{r.role}</div>
+            <div className="mt-4 flex items-center gap-3">
+              <img
+                src={r.image}
+                alt={r.name}
+                className="h-12 w-12 rounded-full object-cover border-2 border-border"
+              />
+              <div>
+                <div className="font-display font-bold text-foreground">{r.name}</div>
+                <div className="text-xs text-muted-foreground">{r.role}</div>
+              </div>
             </div>
           </article>
         ))}
